@@ -26,6 +26,29 @@
   const loadMe = () => { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch { return null; } };
   const saveMe = v => { try { v ? localStorage.setItem(KEY, JSON.stringify(v)) : localStorage.removeItem(KEY); } catch {} };
 
+  const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
+  const validEmail = () => EMAIL_RE.test($("email").value.trim());
+
+  // Mailchimp: add the guest to the audience through the embedded-form JSONP endpoint (no secret key needed).
+  // Best effort: an RSVP never fails because of it, and the emails are also kept in Supabase.
+  function toMailchimp(email, name) {
+    if (!CFG.mailchimpForm) return;
+    try {
+      const u = new URL(CFG.mailchimpForm.replace("/subscribe/post?", "/subscribe/post-json?"));
+      const cb = "mc_cb_" + Date.now();
+      const [first, ...rest] = name.split(" ");
+      u.searchParams.set("EMAIL", email);
+      u.searchParams.set("FNAME", first);
+      if (rest.length) u.searchParams.set("LNAME", rest.join(" "));
+      if (CFG.mailchimpTags) u.searchParams.set("tags", CFG.mailchimpTags);
+      u.searchParams.set("c", cb);
+      const s = document.createElement("script");
+      const done = () => { delete window[cb]; s.remove(); };
+      window[cb] = done; s.onerror = done; s.src = u.toString();
+      document.head.appendChild(s);
+    } catch {}
+  }
+
   const state = { me: loadMe(), guests: [], mine: null, photo: null, editing: false, loaded: false };
 
   async function rpc(fn, args) {
@@ -71,13 +94,14 @@
     updateSubmit();
   });
   $("name").addEventListener("input", updateSubmit);
+  $("email").addEventListener("input", updateSubmit);
 
   function updateSubmit() {
     const b = $("submit");
     if (!LIVE) { b.disabled = true; b.textContent = "RSVP opens soon"; return; }
     if (!state.loaded) { b.disabled = true; b.textContent = "Loading guest list…"; return; }
     const full = !state.mine && state.guests.length >= CAP;
-    b.disabled = full || !$("name").value.trim() || !state.photo;
+    b.disabled = full || !$("name").value.trim() || !validEmail() || !state.photo;
     b.textContent = full ? "Sold out · 150 / 150" : state.mine ? "Save changes" : "Save my seat";
   }
 
@@ -135,20 +159,25 @@
   $("rsvp").addEventListener("submit", async e => {
     e.preventDefault();
     const name = $("name").value.trim().replace(/\s+/g, " ");
+    const email = $("email").value.trim().toLowerCase();
     if (!name || !state.photo) { setMsg($("msg"), "Add your name and a photo to save a seat.", true); return; }
+    if (!EMAIL_RE.test(email)) { setMsg($("msg"), "Check your email address. It should look like name@example.com.", true); return; }
     const b = $("submit"); b.disabled = true; b.textContent = "Saving…";
     try {
       if (state.mine) {
-        const ok = await rpc("update_rsvp", { p_id: state.me.id, p_token: state.me.token, p_name: name, p_photo: state.photo });
+        const ok = await rpc("update_rsvp", { p_id: state.me.id, p_token: state.me.token, p_name: name, p_email: email, p_photo: state.photo });
         if (!ok) { state.me = null; saveMe(null); }
+        else { if (email !== state.me.email) toMailchimp(email, name); state.me = { ...state.me, email }; saveMe(state.me); }
       } else {
-        const res = await rpc("rsvp", { p_name: name, p_photo: state.photo });
-        state.me = { id: res.id, token: res.token }; saveMe(state.me);
+        const res = await rpc("rsvp", { p_name: name, p_email: email, p_photo: state.photo });
+        state.me = { id: res.id, token: res.token, email }; saveMe(state.me);
+        toMailchimp(email, name);
       }
       state.editing = false; setMsg($("msg"), "");
       await refresh();
     } catch (err) {
-      if (err.reason === "full") { setMsg($("msg"), "All 150 seats are taken.", true); await refresh(); }
+      if (err.reason === "duplicate") setMsg($("msg"), "That email already has a seat. Each guest signs up with their own email.", true);
+      else if (err.reason === "full") { setMsg($("msg"), "All 150 seats are taken.", true); await refresh(); }
       else setMsg($("msg"), "Your seat wasn't saved. Check your connection and try again.", true);
       updateSubmit();
     }
@@ -156,7 +185,7 @@
 
   $("edit").onclick = () => {
     state.editing = true;
-    $("name").value = state.mine.name; state.photo = state.mine.photo;
+    $("name").value = state.mine.name; $("email").value = state.me.email || ""; state.photo = state.mine.photo;
     $("pick-img").src = state.photo; $("pick-img").hidden = !state.photo; $("pick-empty").hidden = !!state.photo;
     render(); $("name").focus();
   };
@@ -167,7 +196,7 @@
     try {
       await rpc("cancel_rsvp", { p_id: state.me.id, p_token: state.me.token });
       state.me = null; saveMe(null);
-      toggleCancel(false); state.photo = null; $("name").value = ""; $("pick-img").hidden = true; $("pick-empty").hidden = false;
+      toggleCancel(false); state.photo = null; $("name").value = ""; $("email").value = ""; $("pick-img").hidden = true; $("pick-empty").hidden = false;
       await refresh();
     } catch { setMsg($("tmsg"), "Your RSVP wasn't cancelled. Try again.", true); }
   };

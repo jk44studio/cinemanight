@@ -103,14 +103,15 @@ main { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap:
 form { display: grid; gap: 16px; }
 .field { display: grid; gap: 6px; }
 .field label { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
-input[type=text] { font: inherit; color: var(--cream); background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 12px 14px; width: 100%; }
-input[type=text]:focus-visible, button:focus-visible, .photo-pick:focus-within { outline: 2px solid var(--mustard); outline-offset: 2px; }
+input[type=text], input[type=email] { font: inherit; color: var(--cream); background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 12px 14px; width: 100%; }
+input[type=text]:focus-visible, input[type=email]:focus-visible, button:focus-visible, .photo-pick:focus-within { outline: 2px solid var(--mustard); outline-offset: 2px; }
 .photo-row { display: flex; align-items: center; gap: 14px; }
 .photo-pick { width: 84px; height: 84px; border-radius: 50%; border: 1px dashed var(--muted); display: grid; place-items: center; overflow: hidden; cursor: pointer; flex: none; background: var(--bg); position: relative; }
 .photo-pick img { width: 100%; height: 100%; object-fit: cover; }
 .photo-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 .photo-pick .plus { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; line-height: 1.3; }
 .photo-row small { color: var(--muted); font-size: 13px; }
+.field .hint { color: var(--muted); font-size: 13px; line-height: 1.4; }
 .btn { font-family: var(--display); font-stretch: 115%; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: 16px; border: 0; border-radius: 3px; padding: 14px 18px; cursor: pointer; background: var(--red); color: var(--cream); }
 .btn:hover { filter: brightness(1.08); }
 .btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
@@ -201,12 +202,17 @@ footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
       <div id="desk-form">
         <div style="display:grid;gap:8px;margin-bottom:18px">
           <h2 id="desk-h">Save your seat</h2>
-          <p>150 seats. Add your name and a photo so we know who's coming.</p>
+          <p>150 seats. Add your name, email and a photo so we know who's coming.</p>
         </div>
         <form id="rsvp" novalidate>
           <div class="field">
             <label for="name">Your name</label>
             <input type="text" id="name" maxlength="60" autocomplete="name" placeholder="Name and surname" required>
+          </div>
+          <div class="field">
+            <label for="email">Your email</label>
+            <input type="email" id="email" maxlength="254" autocomplete="email" inputmode="email" placeholder="you@example.com" required>
+            <small class="hint">We'll send you event details and updates. It's never shown on the guest list. Unsubscribe any time.</small>
           </div>
           <div class="field">
             <label for="photo">Your photo</label>
