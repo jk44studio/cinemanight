@@ -6,8 +6,8 @@
 // (looks like https://jk44studio.us21.list-manage.com/subscribe/post?u=...&id=...).
 // Optional: the tag id from the same embed code (hidden input name="tags") to tag guests.
 window.RSVP_CONFIG = {
-  supabaseUrl: "",
-  supabaseKey: "",
+  supabaseUrl: "https://emjykorcvgukiaxpyunn.supabase.co",
+  supabaseKey: "sb_publishable_NSJwJP-j-lXmj-bHx2yR4A_kPyQQnGV",
   mailchimpForm: "",
   mailchimpTags: ""
 };
