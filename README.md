@@ -3,7 +3,7 @@
 RSVP page for the JK44 Studio premiere of **Monozukuri**, **Glacier Surfing** and **BEDI**
 at Súper 8 Cinema, Madrid. Thursday 3 December 2026, 19:00. 150 seats.
 
-Live at **https://cinemanight.jk44studio.com** (GitHub Pages). Guest list stored in Supabase.
+Live at **https://cinemanight.jk44films.com** (GitHub Pages). Guest list stored in Supabase.
 
 ## Files
 
@@ -21,12 +21,12 @@ Live at **https://cinemanight.jk44studio.com** (GitHub Pages). Guest list stored
 1. **Supabase**: create a free project at supabase.com, open *SQL Editor*, paste `supabase/schema.sql`, run it.
    Copy the *Project URL* and the *publishable* (or legacy *anon*) key from *Project Settings → API* into `config.js`.
 2. **GitHub Pages**: repo *Settings → Pages* → *Deploy from a branch* → `main` / root.
-   Custom domain: `cinemanight.jk44studio.com`, then tick *Enforce HTTPS* once the certificate is issued.
+   Custom domain: `cinemanight.jk44films.com`, then tick *Enforce HTTPS* once the certificate is issued.
 3. **Mailchimp**: *Audience → Signup forms → Embedded forms*. From the generated code copy the form `action` URL
    (`https://….list-manage.com/subscribe/post?u=…&id=…`) into `mailchimpForm` in `config.js`.
    To tag guests, create a tag (e.g. *Cinema Night Madrid 2026*), regenerate the embed code with it, and copy the
    hidden `tags` input value into `mailchimpTags`.
-4. **DNS** (wherever jk44studio.com is managed): add a `CNAME` record
+4. **DNS** (wherever jk44films.com is managed: Framer): add a `CNAME` record
    `cinemanight` → `jk44studio.github.io`.
 
 ## How it works
