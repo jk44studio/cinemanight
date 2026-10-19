@@ -8,6 +8,6 @@
 window.RSVP_CONFIG = {
   supabaseUrl: "https://emjykorcvgukiaxpyunn.supabase.co",
   supabaseKey: "sb_publishable_NSJwJP-j-lXmj-bHx2yR4A_kPyQQnGV",
-  mailchimpForm: "",
-  mailchimpTags: ""
+  mailchimpForm: "https://landofride.us1.list-manage.com/subscribe/post?u=7f9103b4d1ba3374b8c63b70b&id=3afbf7f037&f_id=00bdede4f0",
+  mailchimpTags: "6403441"  // Cinema Night Madrid 2026
 };
