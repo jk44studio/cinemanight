@@ -91,15 +91,23 @@ h1, h2, h3 { font-family: var(--display); font-stretch: 125%; text-wrap: balance
 .posters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.6vw, 18px); }
 .posters figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
 .posters img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; display: block; border-radius: 2px; background: var(--panel); }
-.posters figcaption { display: grid; gap: 2px; }
-.posters figcaption strong { font-family: var(--display); font-stretch: 118%; font-weight: 800; font-size: clamp(14px, 1.8vw, 20px); text-transform: uppercase; letter-spacing: .01em; }
-.posters figcaption span { color: var(--muted); font-size: 14px; }
+.posters figcaption { display: grid; gap: 2px; min-width: 0; }
+.posters figcaption strong { font-family: var(--display); font-stretch: 118%; font-weight: 800; font-size: clamp(14px, 1.8vw, 20px); text-transform: uppercase; letter-spacing: .01em; overflow-wrap: anywhere; }
+.posters figcaption span:not(.tag) { color: var(--muted); font-size: 14px; }
 .tag { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
 .tag.gold { color: var(--mustard); }
 
 /* Main grid */
 main { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px; padding-block: 20px 64px; align-items: start; }
-@media (max-width: 820px) { main { grid-template-columns: 1fr; } .posters figcaption span { display: none; } }
+@media (max-width: 820px) { main { grid-template-columns: 1fr; } .posters figcaption span:not(.tag) { display: none; } }
+/* Phones: one film per row, poster beside its caption */
+@media (max-width: 640px) {
+  .posters { grid-template-columns: 1fr; gap: 18px; }
+  .posters figure { grid-template-columns: minmax(0, 42%) minmax(0, 1fr); align-items: center; gap: 16px; }
+  .posters figcaption { gap: 6px; }
+  .posters figcaption strong { font-size: clamp(18px, 5.6vw, 24px); font-stretch: 100%; line-height: 1.1; overflow-wrap: normal; }
+  .posters figcaption span:not(.tag) { display: block; font-size: 15px; line-height: 1.4; }
+}
 .desk { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 24px; display: grid; gap: 18px; position: relative; }
 .desk h2 { font-size: 26px; font-weight: 800; text-transform: uppercase; }
 .desk p { margin: 0; color: var(--muted); }
