@@ -26,7 +26,7 @@ returns json language sql stable security definer set search_path = public as $$
   from rsvps r;
 $$;
 
--- Save a seat. Serialised with a lock so the list can never pass 150.
+-- Save a seat. Serialised with a lock so the list can never pass 200.
 create or replace function public.rsvp(p_name text, p_email text, p_photo text)
 returns json language plpgsql security definer set search_path = public as $$
 declare v_id uuid; v_token uuid;
@@ -35,7 +35,7 @@ begin
   if exists (select 1 from rsvps where lower(email) = lower(btrim(p_email))) then
     raise exception 'duplicate';
   end if;
-  if (select count(*) from rsvps) >= 150 then
+  if (select count(*) from rsvps) >= 200 then
     raise exception 'full';
   end if;
   insert into rsvps (name, email, photo) values (btrim(p_name), lower(btrim(p_email)), p_photo)

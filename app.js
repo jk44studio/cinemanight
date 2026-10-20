@@ -1,5 +1,5 @@
 (() => {
-  const CAP = 150;
+  const CAP = 200;
   const CFG = window.RSVP_CONFIG || {};
   const LIVE = !!(CFG.supabaseUrl && CFG.supabaseKey);
   const KEY = "cinemanight-rsvp";
@@ -102,7 +102,7 @@
     if (!state.loaded) { b.disabled = true; b.textContent = "Loading guest list…"; return; }
     const full = !state.mine && state.guests.length >= CAP;
     b.disabled = full || !$("name").value.trim() || !validEmail() || !state.photo;
-    b.textContent = full ? "Sold out · 150 / 150" : state.mine ? "Save changes" : "Save my seat";
+    b.textContent = full ? `Sold out · ${CAP} / ${CAP}` : state.mine ? "Save changes" : "Save my seat";
   }
 
   function initials(n) { return n.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join(""); }
@@ -112,8 +112,8 @@
     $("count").textContent = n;
     $("left").textContent = n >= CAP ? "Sold out" : `${CAP - n} seat${CAP - n === 1 ? "" : "s"} left`;
     [...meter.children].forEach((cell, i) => {
-      const filled = n - i * 3;
-      cell.className = filled >= 3 ? "on" : filled > 0 ? "half" : "";
+      const per = CAP / 50, filled = n - i * per;
+      cell.className = filled >= per ? "on" : filled > 0 ? "half" : "";
     });
     $("empty").hidden = n > 0;
     const ul = $("guests"); ul.textContent = "";
@@ -177,7 +177,7 @@
       await refresh();
     } catch (err) {
       if (err.reason === "duplicate") setMsg($("msg"), "That email already has a seat. Each guest signs up with their own email.", true);
-      else if (err.reason === "full") { setMsg($("msg"), "All 150 seats are taken.", true); await refresh(); }
+      else if (err.reason === "full") { setMsg($("msg"), `All ${CAP} seats are taken.`, true); await refresh(); }
       else setMsg($("msg"), "Your seat wasn't saved. Check your connection and try again.", true);
       updateSubmit();
     }

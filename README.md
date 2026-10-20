@@ -1,7 +1,7 @@
 # JK44 Cinema Night Madrid
 
 RSVP page for the JK44 Studio premiere of **Monozukuri**, **Glacier Surfing** and **BEDI**
-at Súper 8 Cinema, Madrid. Thursday 3 December 2026, 19:00. 150 seats.
+at Súper 8 Cinema, Madrid. Thursday 3 December 2026, 19:00. 200 seats.
 
 Live at **https://cinemanight.jk44films.com** (GitHub Pages). Guest list stored in Supabase.
 
@@ -33,7 +33,7 @@ Live at **https://cinemanight.jk44films.com** (GitHub Pages). Guest list stored 
 
 - Guests never write to the table directly. The page calls four database functions:
   `guest_list`, `rsvp`, `update_rsvp`, `cancel_rsvp`.
-- `rsvp` takes a lock and refuses with `full` once 150 people are on the list.
+- `rsvp` takes a lock and refuses with `full` once 200 people are on the list.
 - Emails are stored in Supabase (never returned to the page) and one email = one seat.
 - After each sign-up, or an email change, the page adds the guest to the Mailchimp audience via the embedded-form
   endpoint (no secret key involved). If the audience uses double opt-in, guests get a confirmation email first.
