@@ -166,6 +166,10 @@ input[type=text]:focus-visible, input[type=email]:focus-visible, button:focus-vi
 .guests button.sure { color: var(--danger); }
 .empty { border: 1px dashed var(--line); border-radius: 4px; padding: 28px 20px; color: var(--muted); text-align: center; }
 footer { border-top: 1px solid var(--line); padding-block: 22px 32px; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; color: var(--muted); font-size: 14px; }
+footer .foot-right { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
+footer a.ig { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--mustard); text-decoration: none; border-bottom: 1px solid currentColor; }
+footer a.ig:hover { color: var(--cream); }
+footer a:focus-visible { outline: 2px solid var(--mustard); outline-offset: 3px; }
 footer a.studio { text-decoration: none; }
 footer a.studio:hover b { text-decoration: underline; }
 footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
@@ -281,7 +285,7 @@ footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
 
   <footer>
     <span>Súper 8 Cinema · Plaza del Callao, 4, Madrid · Thu 3 Dec 2026, 19:00</span>
-    <span>Produced by <a class="studio" href="https://jk44films.com" target="_blank" rel="noopener"><b>JK44</b></a></span>
+    <span class="foot-right"><a class="ig" href="https://www.instagram.com/landofride" target="_blank" rel="noopener">Instagram ↗</a><span>Produced by <a class="studio" href="https://jk44films.com" target="_blank" rel="noopener"><b>JK44</b></a></span></span>
   </footer>
 </div>
 
