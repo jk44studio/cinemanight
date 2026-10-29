@@ -89,8 +89,8 @@ h1, h2, h3 { font-family: var(--display); font-stretch: 125%; text-wrap: balance
   @keyframes blink { 50% { opacity: .35; box-shadow: none; } }
 }
 .posters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.6vw, 18px); }
-.posters figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
-.posters img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; display: block; border-radius: 2px; background: var(--panel); }
+.posters figure { margin: 0; display: grid; gap: 10px; min-width: 0; align-content: start; }
+.posters img { width: 100%; aspect-ratio: 27 / 40; object-fit: cover; display: block; border-radius: 2px; background: var(--panel); }
 .posters figcaption { display: grid; gap: 2px; min-width: 0; }
 .posters figcaption strong { font-family: var(--display); font-stretch: 118%; font-weight: 800; font-size: clamp(14px, 1.8vw, 20px); text-transform: uppercase; letter-spacing: .01em; overflow-wrap: anywhere; }
 .posters figcaption span:not(.tag) { color: var(--muted); font-size: 14px; }
@@ -165,6 +165,23 @@ input[type=text]:focus-visible, input[type=email]:focus-visible, button:focus-vi
 .guests button { font: 12px var(--mono); background: none; border: 0; color: var(--muted); cursor: pointer; text-decoration: underline; padding: 2px; }
 .guests button.sure { color: var(--danger); }
 .empty { border: 1px dashed var(--line); border-radius: 4px; padding: 28px 20px; color: var(--muted); text-align: center; }
+/* Sponsors: logos drift left to right in an endless loop */
+.sponsors { border-top: 1px solid var(--line); padding-block: 28px 40px; display: grid; gap: 20px; }
+.sp-viewport { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.sp-track { display: flex; width: max-content; }
+.sp-set { display: flex; align-items: center; gap: clamp(48px, 8vw, 96px); padding-right: clamp(48px, 8vw, 96px); }
+.sp-set img { height: clamp(44px, 7vw, 64px); width: auto; max-width: none; display: block; opacity: .9; }
+.sp-set img.turia { height: clamp(52px, 8.5vw, 78px); }
+@media (prefers-reduced-motion: no-preference) {
+  .sp-track { animation: sp-drift 28s linear infinite; }
+  .sp-viewport:hover .sp-track { animation-play-state: paused; }
+  @keyframes sp-drift { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-viewport { -webkit-mask-image: none; mask-image: none; }
+  .sp-track { width: auto; justify-content: center; }
+  .sp-set[aria-hidden="true"], .sp-set img:nth-child(n+3) { display: none; }
+}
 footer { border-top: 1px solid var(--line); padding-block: 22px 32px; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; color: var(--muted); font-size: 14px; }
 footer .foot-right { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
 footer a.ig { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--mustard); text-decoration: none; border-bottom: 1px solid currentColor; }
@@ -200,15 +217,15 @@ footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
     </div>
     <div class="posters">
       <figure>
-        <img src="assets/mono.jpg" alt="Monozukuri poster: a Japanese craftsman in a dust mask, surfers and snowboarders, in red">
+        <img src="assets/mono.jpg" alt="Monozukuri poster: the kanji 物 in red over a strip of craftsmen's eyes, with festival laurels">
         <figcaption><span class="tag">Festival selection 2026</span><strong>Monozukuri</strong><span>The journey is the craft. By JK44 Studio &amp; Jorge Abian.</span></figcaption>
       </figure>
       <figure>
-        <img src="assets/glacier.jpg" alt="Glacier Surfing poster: a surfer with a board standing before a glacier wall">
+        <img src="assets/glacier.jpg" alt="Glacier Surfing poster: halftone photo of a surfer holding a board on the ice">
         <figcaption><span class="tag gold">Madrid screening</span><strong>Glacier Surfing</strong><span>A story by Jorge Abian, featuring Eurico Romaguera.</span></figcaption>
       </figure>
       <figure>
-        <img src="assets/bedi.jpg" alt="BEDI poster: the letters BEDI filled with snowy Georgian mountain scenes">
+        <img src="assets/bedi.jpg" alt="BEDI poster: freeriders walking through an orange snowstorm past mountain huts">
         <figcaption><span class="tag">Worldwide premiere</span><strong>BEDI</strong><span>A ghost town in Georgia's mountains brought back to life for freeriders.</span></figcaption>
       </figure>
     </div>
@@ -287,6 +304,16 @@ footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
     <span>Súper 8 Cinema · Plaza del Callao, 4, Madrid · Thu 3 Dec 2026, 19:00</span>
     <span class="foot-right"><a class="ig" href="https://www.instagram.com/landofride" target="_blank" rel="noopener">Instagram ↗</a><span>Produced by <a class="studio" href="https://jk44films.com" target="_blank" rel="noopener"><b>JK44</b></a></span></span>
   </footer>
+
+  <section class="sponsors" aria-labelledby="sp-h">
+    <span class="label" id="sp-h">Sponsors</span>
+    <div class="sp-viewport">
+      <div class="sp-track">
+        <div class="sp-set"><img src="assets/sponsors/turia.png" class="turia" alt="Turia" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="Amundsen Sports" width="363" height="140" loading="lazy"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"></div>
+        <div class="sp-set" aria-hidden="true"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"></div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <script src="config.js"></script>
