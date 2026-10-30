@@ -45,6 +45,7 @@ img { max-width: 100%; }
   --board-lo: #ece0c6;
   --rail: #d6c8ab;
   --ink: #15110f;
+  --poster-edge: rgba(243, 234, 217, .22);
   --display: "Archivo", "Arial Black", "Helvetica Neue", sans-serif;
   --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -90,7 +91,7 @@ h1, h2, h3 { font-family: var(--display); font-stretch: 125%; text-wrap: balance
 }
 .posters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.6vw, 18px); }
 .posters figure { margin: 0; display: grid; gap: 10px; min-width: 0; align-content: start; }
-.posters img { width: 100%; aspect-ratio: 27 / 40; object-fit: cover; display: block; border-radius: 2px; background: var(--panel); }
+.posters img { width: 100%; aspect-ratio: 27 / 40; object-fit: cover; display: block; border-radius: 2px; background: var(--panel); box-shadow: 0 0 0 1px var(--poster-edge); }
 .posters figcaption { display: grid; gap: 2px; min-width: 0; }
 .posters figcaption strong { font-family: var(--display); font-stretch: 118%; font-weight: 800; font-size: clamp(14px, 1.8vw, 20px); text-transform: uppercase; letter-spacing: .01em; overflow-wrap: anywhere; }
 .posters figcaption span:not(.tag) { color: var(--muted); font-size: 14px; }
