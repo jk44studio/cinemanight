@@ -174,15 +174,16 @@ input[type=text]:focus-visible, input[type=email]:focus-visible, button:focus-vi
 .sp-set img { height: clamp(44px, 7vw, 64px); width: auto; max-width: none; display: block; opacity: .9; }
 .sp-set img.turia { height: clamp(52px, 8.5vw, 78px); }
 .sp-set img.grosso { height: clamp(48px, 7.6vw, 70px); }
+.sp-set img.lor { height: clamp(30px, 4.6vw, 42px); }
 @media (prefers-reduced-motion: no-preference) {
-  .sp-track { animation: sp-drift 36s linear infinite; }
+  .sp-track { animation: sp-drift 44s linear infinite; }
   .sp-viewport:hover .sp-track { animation-play-state: paused; }
   @keyframes sp-drift { from { transform: translateX(-50%); } to { transform: translateX(0); } }
 }
 @media (prefers-reduced-motion: reduce) {
   .sp-viewport { -webkit-mask-image: none; mask-image: none; }
   .sp-track { width: auto; justify-content: center; }
-  .sp-set[aria-hidden="true"], .sp-set img:nth-child(n+4) { display: none; }
+  .sp-set[aria-hidden="true"], .sp-set img:nth-child(n+5) { display: none; }
 }
 footer { border-top: 1px solid var(--line); padding-block: 22px 32px; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; color: var(--muted); font-size: 14px; }
 footer .foot-right { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
@@ -311,8 +312,8 @@ footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
     <span class="label" id="sp-h">Sponsors</span>
     <div class="sp-viewport">
       <div class="sp-track">
-        <div class="sp-set"><img src="assets/sponsors/turia.png" class="turia" alt="Turia" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="Amundsen Sports" width="363" height="140" loading="lazy"><img src="assets/sponsors/grosso-napoletano.png" class="grosso" alt="Grosso Napoletano" width="461" height="200" loading="lazy"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="assets/sponsors/grosso-napoletano.png" class="grosso" alt="" width="461" height="200" loading="lazy"></div>
-        <div class="sp-set" aria-hidden="true"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="assets/sponsors/grosso-napoletano.png" class="grosso" alt="" width="461" height="200" loading="lazy"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="assets/sponsors/grosso-napoletano.png" class="grosso" alt="" width="461" height="200" loading="lazy"></div>
+        <div class="sp-set"><img src="assets/sponsors/turia.png" class="turia" alt="Turia" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="Amundsen Sports" width="363" height="140" loading="lazy"><img src="assets/sponsors/grosso-napoletano.png" class="grosso" alt="Grosso Napoletano" width="461" height="200" loading="lazy"><img src="assets/sponsors/land-of-ride.png" class="lor" alt="Land of Ride" width="512" height="100" loading="lazy"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="assets/sponsors/grosso-napoletano.png" class="grosso" alt="" width="461" height="200" loading="lazy"><img src="assets/sponsors/land-of-ride.png" class="lor" alt="" width="512" height="100" loading="lazy"></div>
+        <div class="sp-set" aria-hidden="true"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="assets/sponsors/grosso-napoletano.png" class="grosso" alt="" width="461" height="200" loading="lazy"><img src="assets/sponsors/land-of-ride.png" class="lor" alt="" width="512" height="100" loading="lazy"><img src="assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="assets/sponsors/grosso-napoletano.png" class="grosso" alt="" width="461" height="200" loading="lazy"><img src="assets/sponsors/land-of-ride.png" class="lor" alt="" width="512" height="100" loading="lazy"></div>
       </div>
     </div>
   </section>
