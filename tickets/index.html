@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>JK44 Cinema Night Tickets</title>
+<meta name="description" content="Tickets for JK44 Cinema Night: Monozukuri, Glacier Surfing and BEDI at Súper 8 Cinema, Madrid. Thursday 3 December 2026, 19:00. 12 € per seat.">
+<meta name="theme-color" content="#0e0c0b">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cinemanight.jk44films.com/tickets/">
+<meta property="og:title" content="JK44 Cinema Night Madrid · 3 Dec 2026">
+<meta property="og:description" content="Tickets for JK44 Cinema Night: Monozukuri, Glacier Surfing and BEDI at Súper 8 Cinema, Madrid. Thursday 3 December 2026, 19:00. 12 € per seat.">
+<meta property="og:image" content="https://cinemanight.jk44films.com/assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+html { -webkit-text-size-adjust: 100%; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+/* Layout: a projection-room page. Posters lead like a marquee, then ticket desk (form) beside the house list (guests). Single dark theme by choice. */
+:root {
+  --bg: #0e0c0b;
+  --panel: #181513;
+  --line: #2e2824;
+  --cream: #f3ead9;
+  --muted: #a39686;
+  --red: #f0391f;
+  --mustard: #e3ad3c;
+  --danger: #ff7a66;
+  --neon: #ff5a3c;
+  --glow: rgba(240, 57, 31, .55);
+  --frame: #2a0c07;
+  --bulb: #fff3d6;
+  --board-hi: #fbf5e8;
+  --board-lo: #ece0c6;
+  --rail: #d6c8ab;
+  --ink: #15110f;
+  --poster-edge: rgba(243, 234, 217, .22);
+  --display: "Archivo", "Arial Black", "Helvetica Neue", sans-serif;
+  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--cream); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.label { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+h1, h2, h3 { font-family: var(--display); font-stretch: 125%; text-wrap: balance; margin: 0; }
+
+/* Hero */
+.hero { padding-block: 40px 28px; display: grid; gap: 28px; }
+.hero-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px; }
+.hero h1 { font-weight: 900; font-size: clamp(44px, 9.5vw, 116px); line-height: .88; letter-spacing: -.02em; text-transform: uppercase; }
+.hero h1 { text-shadow: 0 0 4px rgba(255, 243, 214, .55), 0 0 18px rgba(227, 173, 60, .35), 0 0 42px rgba(240, 57, 31, .25); }
+.hero h1 span { color: var(--red); display: block; text-shadow: 0 0 4px var(--neon), 0 0 14px var(--glow), 0 0 36px var(--glow), 0 0 70px rgba(240, 57, 31, .35); }
+@media (prefers-reduced-motion: no-preference) {
+  .hero h1 span { animation: neon-on 1.6s ease-out both; }
+  @keyframes neon-on { 0%, 8%, 14% { text-shadow: none; opacity: .75; } 10%, 18%, 100% { opacity: 1; } }
+}
+.when { display: flex; flex-wrap: wrap; gap: 8px 28px; font-family: var(--display); font-stretch: 112%; font-weight: 800; font-size: clamp(20px, 3vw, 30px); text-transform: uppercase; }
+/* Marquee: a venue sign over a backlit letterboard, neon-edged, ringed by bulbs placed one per corner */
+.marquee { display: grid; gap: 14px; justify-items: center; padding-block: 6px; }
+.mq-sign { background: var(--red); color: var(--cream); font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: clamp(28px, 5.5vw, 56px); line-height: 1; letter-spacing: .08em; padding: 12px 26px 10px; border-radius: 3px; text-shadow: 0 0 6px var(--bulb), 0 0 18px var(--glow); box-shadow: inset 0 0 0 2px var(--neon), 0 0 22px var(--glow); }
+.board { position: relative; width: 100%; padding: 18px; background: var(--frame); border-radius: 6px; box-shadow: 0 0 0 2px var(--neon), 0 0 14px var(--glow), 0 0 44px var(--glow); }
+.bulbs { position: absolute; inset: 0; pointer-events: none; }
+.bulbs i { position: absolute; width: 7px; height: 7px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--bulb); box-shadow: 0 0 4px var(--bulb), 0 0 10px var(--mustard); }
+.panel { background: linear-gradient(var(--board-hi), var(--board-lo)); border-radius: 2px; padding: 8px clamp(10px, 3vw, 28px); display: grid; box-shadow: inset 0 0 28px rgba(227, 173, 60, .35); }
+.panel p { margin: 0; color: var(--ink); font-family: var(--display); font-stretch: 62%; font-weight: 800; text-transform: uppercase; text-align: center; letter-spacing: .07em; font-size: clamp(20px, 5vw, 50px); line-height: 1.12; padding-block: 7px 5px; border-bottom: 2px solid var(--rail); text-wrap: balance; font-variant-numeric: tabular-nums; }
+.panel p:last-child { border-bottom: 0; }
+.panel p.sm { font-size: clamp(14px, 2.8vw, 26px); }
+.panel p.red { color: var(--red); }
+.venue-line { display: flex; flex-wrap: wrap; justify-content: center; align-items: baseline; gap: 6px 16px; text-align: center; color: var(--muted); font-size: 15px; }
+.venue-line strong { color: var(--cream); font-weight: 600; }
+.venue-line a { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--mustard); text-decoration: none; border-bottom: 1px solid currentColor; }
+.venue-line a:hover { color: var(--cream); }
+.venue-line a:focus-visible { outline: 2px solid var(--mustard); outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) {
+  .bulbs i:nth-child(odd) { animation: blink 1.2s steps(1) infinite; }
+  .bulbs i:nth-child(even) { animation: blink 1.2s steps(1) -.6s infinite; }
+  @keyframes blink { 50% { opacity: .35; box-shadow: none; } }
+}
+.posters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(8px, 1.6vw, 18px); }
+.posters figure { margin: 0; display: grid; gap: 10px; min-width: 0; align-content: start; }
+.posters img { width: 100%; aspect-ratio: 27 / 40; object-fit: cover; display: block; border-radius: 2px; background: var(--panel); box-shadow: 0 0 0 1px var(--poster-edge); }
+.posters figcaption { display: grid; gap: 2px; min-width: 0; }
+.posters figcaption strong { font-family: var(--display); font-stretch: 118%; font-weight: 800; font-size: clamp(14px, 1.8vw, 20px); text-transform: uppercase; letter-spacing: .01em; overflow-wrap: anywhere; }
+.posters figcaption span:not(.tag) { color: var(--muted); font-size: 14px; }
+.tag { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--red); }
+.tag.gold { color: var(--mustard); }
+
+/* Main grid */
+main { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 28px; padding-block: 20px 64px; align-items: start; }
+@media (max-width: 820px) { main { grid-template-columns: 1fr; } .posters figcaption span:not(.tag) { display: none; } }
+/* Phones: one film per row, poster beside its caption */
+@media (max-width: 640px) {
+  .posters { grid-template-columns: 1fr; gap: 18px; }
+  .posters figure { grid-template-columns: minmax(0, 42%) minmax(0, 1fr); align-items: center; gap: 16px; }
+  .posters figcaption { gap: 6px; }
+  .posters figcaption strong { font-size: clamp(18px, 5.6vw, 24px); font-stretch: 100%; line-height: 1.1; overflow-wrap: normal; }
+  .posters figcaption span:not(.tag) { display: block; font-size: 15px; line-height: 1.4; }
+}
+.desk { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 24px; display: grid; gap: 18px; position: relative; }
+.desk h2 { font-size: 26px; font-weight: 800; text-transform: uppercase; }
+.desk p { margin: 0; color: var(--muted); }
+form { display: grid; gap: 16px; }
+.field { display: grid; gap: 6px; }
+.field label { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+input[type=text], input[type=email] { font: inherit; color: var(--cream); background: var(--bg); border: 1px solid var(--line); border-radius: 3px; padding: 12px 14px; width: 100%; }
+input[type=text]:focus-visible, input[type=email]:focus-visible, button:focus-visible, .photo-pick:focus-within { outline: 2px solid var(--mustard); outline-offset: 2px; }
+.photo-row { display: flex; align-items: center; gap: 14px; }
+.photo-pick { width: 84px; height: 84px; border-radius: 50%; border: 1px dashed var(--muted); display: grid; place-items: center; overflow: hidden; cursor: pointer; flex: none; background: var(--bg); position: relative; }
+.photo-pick img { width: 100%; height: 100%; object-fit: cover; }
+.photo-pick input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.photo-pick .plus { font-family: var(--mono); font-size: 12px; color: var(--muted); text-align: center; line-height: 1.3; }
+.photo-row small { color: var(--muted); font-size: 13px; }
+.field .hint { color: var(--muted); font-size: 13px; line-height: 1.4; }
+.btn { font-family: var(--display); font-stretch: 115%; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: 16px; border: 0; border-radius: 3px; padding: 14px 18px; cursor: pointer; background: var(--red); color: var(--cream); }
+.btn:hover { filter: brightness(1.08); }
+.btn:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+.btn.ghost { background: transparent; color: var(--muted); border: 1px solid var(--line); font-size: 13px; padding: 10px 14px; }
+.btn.ghost:hover { color: var(--cream); border-color: var(--muted); }
+.btn.danger { background: var(--danger); color: var(--bg); font-size: 13px; padding: 10px 14px; }
+.msg { font-size: 14px; color: var(--mustard); min-height: 1.5em; margin: 0; }
+.msg.err { color: var(--danger); }
+
+/* Ticket */
+.ticket { display: grid; grid-template-columns: 1fr auto; background: var(--cream); color: var(--bg); border-radius: 4px; overflow: hidden; }
+.ticket .main { padding: 18px 18px 16px; display: grid; gap: 10px; min-width: 0; }
+.ticket .who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.ticket .who img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; flex: none; }
+.ticket .who strong { font-family: var(--display); font-stretch: 115%; font-weight: 800; font-size: 20px; text-transform: uppercase; overflow-wrap: anywhere; line-height: 1.1; }
+.ticket .meta { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.ticket .stub { border-left: 2px dashed var(--bg); padding: 18px 16px; display: grid; align-content: center; justify-items: center; background: var(--red); color: var(--cream); }
+.ticket .stub span { font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; }
+.ticket .stub b { font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: 38px; line-height: 1; font-variant-numeric: tabular-nums; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+/* House list */
+.house { display: grid; gap: 18px; min-width: 0; }
+.house-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 10px; }
+.house-head h2 { font-size: 26px; font-weight: 800; text-transform: uppercase; }
+.count { font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.count small { font-size: 16px; color: var(--muted); font-weight: 700; }
+.meter { display: grid; grid-template-columns: repeat(50, 1fr); gap: 3px; }
+.meter i { height: 10px; border-radius: 1px; background: var(--line); }
+.meter i.on { background: var(--red); }
+.meter i.half { background: linear-gradient(90deg, var(--red) 50%, var(--line) 50%); }
+.meter-cap { display: flex; justify-content: space-between; }
+.guests { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 18px 12px; }
+.guests li { display: grid; justify-items: center; gap: 8px; text-align: center; min-width: 0; }
+.guests img, .guests .noimg { width: 76px; height: 76px; border-radius: 50%; object-fit: cover; background: var(--panel); border: 2px solid var(--line); }
+.guests li.me img { border-color: var(--mustard); }
+.guests .noimg { display: grid; place-items: center; font-family: var(--display); font-weight: 800; color: var(--muted); }
+.guests .nm { font-size: 14px; line-height: 1.25; overflow-wrap: anywhere; }
+.guests .seat { font-family: var(--mono); font-size: 11px; color: var(--muted); letter-spacing: .08em; }
+.guests button { font: 12px var(--mono); background: none; border: 0; color: var(--muted); cursor: pointer; text-decoration: underline; padding: 2px; }
+.guests button.sure { color: var(--danger); }
+.empty { border: 1px dashed var(--line); border-radius: 4px; padding: 28px 20px; color: var(--muted); text-align: center; }
+/* Sponsors: logos drift left to right in an endless loop */
+.sponsors { border-top: 1px solid var(--line); padding-block: 28px 40px; display: grid; gap: 20px; }
+.sp-viewport { overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+.sp-track { display: flex; width: max-content; }
+.sp-set { display: flex; align-items: center; gap: clamp(48px, 8vw, 96px); padding-right: clamp(48px, 8vw, 96px); }
+.sp-set img { height: clamp(44px, 7vw, 64px); width: auto; max-width: none; display: block; opacity: .9; }
+.sp-set img.turia { height: clamp(52px, 8.5vw, 78px); }
+.sp-set img.grosso { height: clamp(18px, 2.9vw, 27px); }
+.sp-set img.lor { height: clamp(15px, 2.3vw, 21px); }
+@media (prefers-reduced-motion: no-preference) {
+  .sp-track { animation: sp-drift 44s linear infinite; }
+  .sp-viewport:hover .sp-track { animation-play-state: paused; }
+  @keyframes sp-drift { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-viewport { -webkit-mask-image: none; mask-image: none; }
+  .sp-track { width: auto; justify-content: center; }
+  .sp-set[aria-hidden="true"], .sp-set img:nth-child(n+5) { display: none; }
+}
+footer { border-top: 1px solid var(--line); padding-block: 22px 32px; display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; color: var(--muted); font-size: 14px; }
+footer .foot-right { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
+footer a.ig { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--mustard); text-decoration: none; border-bottom: 1px solid currentColor; }
+footer a.ig:hover { color: var(--cream); }
+footer a:focus-visible { outline: 2px solid var(--mustard); outline-offset: 3px; }
+footer a.studio { text-decoration: none; }
+footer a.studio:hover b { text-decoration: underline; }
+footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
+@media (prefers-reduced-motion: no-preference) {
+  .ticket { animation: rise .5s ease-out; }
+  @keyframes rise { from { transform: translateY(8px); } to { transform: none; } }
+}
+
+/* ---- Tickets page ---- */
+.buy-head { display: grid; gap: 8px; }
+.price { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.price b { font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: clamp(48px, 7vw, 64px); line-height: 1; color: var(--red); font-variant-numeric: tabular-nums; }
+.price span { color: var(--muted); }
+.incl { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; border-block: 1px solid var(--line); padding-block: 14px; }
+.incl li { display: flex; gap: 10px; align-items: baseline; }
+.incl li::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--mustard); flex: none; transform: translateY(-2px); }
+.qty-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.stepper { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 3px; background: var(--bg); }
+.stepper button { width: 44px; height: 44px; border: 0; background: none; color: var(--cream); font: 600 22px var(--body); cursor: pointer; }
+.stepper button:disabled { color: var(--line); cursor: not-allowed; }
+.stepper button:focus-visible { outline: 2px solid var(--mustard); outline-offset: -2px; }
+.stepper output { min-width: 34px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 20px; font-variant-numeric: tabular-nums; }
+.total { font-family: var(--mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.total b { color: var(--cream); font-size: 16px; }
+.urgency { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--mustard); }
+.urgency i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 0 var(--glow); }
+.fine { font-size: 13px; color: var(--muted); }
+#buymsg:empty { display: none; }
+.guests li.ghost { --fade: 1; opacity: var(--fade); }
+.guests .sil { width: 76px; height: 76px; border-radius: 50%; border: 2px dashed var(--line); background:
+  radial-gradient(circle at 50% 38%, var(--line) 0 13px, transparent 14px),
+  radial-gradient(ellipse 26px 18px at 50% 92%, var(--line) 0 98%, transparent 100%), var(--panel); }
+.guests li.ghost .nm, .guests li.more .nm { color: var(--muted); font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; }
+.guests .sil.plus { display: grid; place-items: center; background: var(--panel); border: 2px solid var(--line); font-family: var(--display); font-stretch: 112%; font-weight: 900; font-size: 20px; color: var(--cream); }
+.seats { display: grid; gap: 10px; border: 1px solid var(--line); border-radius: 4px; padding: 18px clamp(12px, 3vw, 22px) 16px; background: var(--panel); }
+.screen { height: 6px; border-radius: 50% 50% 0 0 / 100% 100% 0 0; background: linear-gradient(90deg, transparent, var(--cream), transparent); opacity: .55; box-shadow: 0 6px 22px rgba(243, 234, 217, .25); }
+.screen-label { text-align: center; }
+.seatmap { display: grid; gap: 5px; justify-content: center; padding-top: 6px; }
+.seat-row { display: flex; gap: 4px; }
+.seat-row .seat:nth-child(10) { margin-right: 12px; }
+.seat { width: 11px; height: 9px; border-radius: 3px 3px 2px 2px; transform: translateY(var(--arc, 0)); }
+.seat.taken { background: var(--line); }
+.seat.open { background: transparent; box-shadow: inset 0 0 0 1.5px var(--mustard); }
+.legend { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 8px; }
+.legend .seat { transform: none; }
+@media (max-width: 400px) { .seat { width: 9px; height: 8px; } .seat-row { gap: 3px; } .seat-row .seat:nth-child(10) { margin-right: 8px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .seat.open { animation: seat-glow 2.4s ease-in-out var(--d, 0s) infinite; }
+  @keyframes seat-glow { 50% { background: var(--mustard); box-shadow: inset 0 0 0 1.5px var(--mustard), 0 0 8px var(--mustard); } }
+  .urgency i { animation: ping 1.8s ease-out infinite; }
+  @keyframes ping { 70% { box-shadow: 0 0 0 7px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-top">
+      <span class="label">JK44 Studio presents</span>
+      <span class="label">Three films · One night</span>
+    </div>
+    <h1>Cinema Night <span>Madrid</span></h1>
+    <div class="marquee">
+      <div class="board">
+        <div class="bulbs" aria-hidden="true"></div>
+        <div class="panel">
+          <p class="sm">JK44 Studio presents</p>
+          <p class="red">Thu 3 Dec 2026 · 19:00</p>
+          <p>Monozukuri · Glacier Surfing · BEDI</p>
+        </div>
+      </div>
+      <div class="venue-line"><span><strong>Súper 8 Cinema</strong> · Palacio de la Prensa · Plaza del Callao, 4 · 28013 Madrid</span><a href="https://www.google.com/maps/search/?api=1&amp;query=Cine+Super+8+Palacio+de+la+Prensa+Plaza+del+Callao+4+Madrid" target="_blank" rel="noopener">Open in Maps ↗</a></div>
+    </div>
+    <div class="posters">
+      <figure>
+        <img src="../assets/mono.jpg" alt="Monozukuri poster: the kanji 物 in red over a strip of craftsmen's eyes, with festival laurels">
+        <figcaption><span class="tag">Festival selection 2026</span><strong>Monozukuri</strong><span>The journey is the craft. By JK44 Studio &amp; Jorge Abian.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="../assets/glacier.jpg" alt="Glacier Surfing poster: halftone photo of a surfer holding a board on the ice">
+        <figcaption><span class="tag gold">Madrid screening</span><strong>Glacier Surfing</strong><span>A story by Jorge Abian, featuring Eurico Romaguera.</span></figcaption>
+      </figure>
+      <figure>
+        <img src="../assets/bedi.jpg" alt="BEDI poster: freeriders walking through an orange snowstorm past mountain huts">
+        <figcaption><span class="tag">Worldwide premiere</span><strong>BEDI</strong><span>A ghost town in Georgia's mountains brought back to life for freeriders.</span></figcaption>
+      </figure>
+    </div>
+  </header>
+
+  <main>
+    <section class="desk" aria-labelledby="desk-h">
+      <div class="buy-head">
+        <span class="label">General admission</span>
+        <h2 id="desk-h">Get your ticket</h2>
+      </div>
+      <div class="price"><b>12 €</b><span>per seat · three films, one night</span></div>
+      <ul class="incl">
+        <li>Monozukuri, Glacier Surfing and the world premiere of BEDI</li>
+        <li>Thu 3 Dec 2026 · 19:00 · Súper 8 Cinema, Madrid</li>
+      </ul>
+      <div class="qty-row">
+        <span class="stepper" role="group" aria-label="Number of tickets">
+          <button type="button" id="minus" aria-label="One ticket fewer">−</button>
+          <output id="qty" aria-live="polite">1</output>
+          <button type="button" id="plus" aria-label="One ticket more">+</button>
+        </span>
+        <span class="total">Total <b id="total">12 €</b></span>
+      </div>
+      <button class="btn" type="button" id="buy">Buy 1 ticket · 12 €</button>
+      <div class="urgency"><i></i><span><span id="seats-left">23</span> seats left of 200</span></div>
+      <p class="msg" id="buymsg" role="status"></p>
+      <p class="fine">Secure card payment.</p>
+    </section>
+
+    <section class="house" aria-labelledby="house-h">
+      <div class="house-head">
+        <div style="display:grid;gap:4px"><span class="label">Guest list</span><h2 id="house-h">Who's coming</h2></div>
+        <div class="count"><span id="count">177</span><small> / 200</small></div>
+      </div>
+      <div style="display:grid;gap:6px">
+        <div class="meter" id="meter" aria-hidden="true"></div>
+        <div class="meter-cap label"><span id="left">Only 23 seats left</span><span>Capacity 200</span></div>
+      </div>
+      <ul class="guests" id="guests"></ul>
+      <div class="seats" aria-label="Seat map: 177 of 200 seats taken">
+        <div class="screen" aria-hidden="true"></div>
+        <span class="label screen-label">Screen</span>
+        <div class="seatmap" id="seatmap" aria-hidden="true"></div>
+        <div class="legend label"><span><i class="seat taken"></i>Taken</span><span><i class="seat open"></i>Available</span></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Súper 8 Cinema · Plaza del Callao, 4, Madrid · Thu 3 Dec 2026, 19:00</span>
+    <span class="foot-right"><a class="ig" href="https://www.instagram.com/landofride" target="_blank" rel="noopener">Instagram ↗</a><span>Produced by <a class="studio" href="https://jk44films.com" target="_blank" rel="noopener"><b>JK44</b></a></span></span>
+  </footer>
+
+  <section class="sponsors" aria-labelledby="sp-h">
+    <span class="label" id="sp-h">Sponsors</span>
+    <div class="sp-viewport">
+      <div class="sp-track">
+        <div class="sp-set"><img src="../assets/sponsors/turia.png" class="turia" alt="Turia" width="370" height="200" loading="lazy"><img src="../assets/sponsors/amundsen-sports.png" alt="Amundsen Sports" width="363" height="140" loading="lazy"><img src="../assets/sponsors/grosso.svg" class="grosso" alt="Grosso Napoletano" width="3900" height="709" loading="lazy"><img src="../assets/sponsors/land-of-ride.svg" class="lor" alt="Land of Ride" width="2565" height="505" loading="lazy"><img src="../assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="../assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="../assets/sponsors/grosso.svg" class="grosso" alt="" width="3900" height="709" loading="lazy"><img src="../assets/sponsors/land-of-ride.svg" class="lor" alt="" width="2565" height="505" loading="lazy"></div>
+        <div class="sp-set" aria-hidden="true"><img src="../assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="../assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="../assets/sponsors/grosso.svg" class="grosso" alt="" width="3900" height="709" loading="lazy"><img src="../assets/sponsors/land-of-ride.svg" class="lor" alt="" width="2565" height="505" loading="lazy"><img src="../assets/sponsors/turia.png" class="turia" alt="" width="370" height="200" loading="lazy"><img src="../assets/sponsors/amundsen-sports.png" alt="" width="363" height="140" loading="lazy"><img src="../assets/sponsors/grosso.svg" class="grosso" alt="" width="3900" height="709" loading="lazy"><img src="../assets/sponsors/land-of-ride.svg" class="lor" alt="" width="2565" height="505" loading="lazy"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="../config.js"></script>
+<script src="tickets.js"></script>
+</body>
+</html>
