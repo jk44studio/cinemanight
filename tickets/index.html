@@ -116,6 +116,20 @@ main { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap:
 .desk { background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: 24px; display: grid; gap: 18px; position: relative; }
 .desk h2 { font-size: 26px; font-weight: 800; text-transform: uppercase; }
 .desk p { margin: 0; color: var(--muted); }
+/* Ticket box is the call to action: neon frame like the marquee, stays in view on desktop */
+.desk.cta { border: 2px solid var(--neon); background: linear-gradient(180deg, rgba(240, 57, 31, .14), rgba(240, 57, 31, 0) 46%), var(--panel);
+  box-shadow: 0 0 0 1px rgba(255, 90, 60, .35), 0 0 22px var(--glow), 0 0 60px rgba(240, 57, 31, .22); scroll-margin-top: 16px; }
+.desk.cta h2 { font-size: clamp(30px, 4vw, 40px); font-weight: 900; line-height: 1; text-shadow: 0 0 4px rgba(255, 243, 214, .45), 0 0 18px rgba(240, 57, 31, .35); }
+.desk.cta .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--mustard); display: inline-flex; align-items: center; gap: 8px; }
+.desk.cta .eyebrow i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); }
+.desk.cta #buy { font-size: 18px; padding: 18px 20px; box-shadow: 0 0 18px var(--glow); }
+@media (min-width: 821px) { .desk.cta { position: sticky; top: 16px; } }
+.hero-cta { justify-self: center; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-size: 17px; padding: 15px 26px; box-shadow: 0 0 0 1px rgba(255, 90, 60, .4), 0 0 24px var(--glow); }
+.hero-cta:focus-visible, .desk.cta #buy:focus-visible { outline: 2px solid var(--mustard); outline-offset: 3px; }
+@media (prefers-reduced-motion: no-preference) {
+  .desk.cta .eyebrow i { animation: ping 1.8s ease-out infinite; }
+  html { scroll-behavior: smooth; }
+}
 form { display: grid; gap: 16px; }
 .field { display: grid; gap: 6px; }
 .field label { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
@@ -264,6 +278,7 @@ footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
         </div>
       </div>
       <div class="venue-line"><span><strong>Súper 8 Cinema</strong> · Palacio de la Prensa · Plaza del Callao, 4 · 28013 Madrid</span><a href="https://www.google.com/maps/search/?api=1&amp;query=Cine+Super+8+Palacio+de+la+Prensa+Plaza+del+Callao+4+Madrid" target="_blank" rel="noopener">Open in Maps ↗</a></div>
+      <a class="btn hero-cta" href="#buy-box">Get your ticket ↓</a>
     </div>
     <div class="posters">
       <figure>
@@ -282,9 +297,9 @@ footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
   </header>
 
   <main>
-    <section class="desk" aria-labelledby="desk-h">
+    <section class="desk cta" id="buy-box" aria-labelledby="desk-h">
       <div class="buy-head">
-        <span class="label">General admission</span>
+        <span class="eyebrow"><i></i>General admission</span>
         <h2 id="desk-h">Get your ticket</h2>
       </div>
       <div class="price"><b>12 €</b><span>per seat · three films, one night</span></div>
