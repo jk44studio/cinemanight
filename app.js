@@ -27,7 +27,6 @@
   const saveMe = v => { try { v ? localStorage.setItem(KEY, JSON.stringify(v)) : localStorage.removeItem(KEY); } catch {} };
 
   const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
-  const validEmail = () => EMAIL_RE.test($("email").value.trim());
 
   // Mailchimp: add the guest to the audience through the embedded-form JSONP endpoint (no secret key needed).
   // Best effort: an RSVP never fails because of it, and the emails are also kept in Supabase.
@@ -101,7 +100,7 @@
     if (!LIVE) { b.disabled = true; b.textContent = "RSVP opens soon"; return; }
     if (!state.loaded) { b.disabled = true; b.textContent = "Loading guest list…"; return; }
     const full = !state.mine && state.guests.length >= CAP;
-    b.disabled = full || !$("name").value.trim() || !validEmail() || !state.photo;
+    b.disabled = full;
     b.textContent = full ? `Sold out · ${CAP} / ${CAP}` : state.mine ? "Save changes" : "Save my seat";
   }
 
