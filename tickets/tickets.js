@@ -1,7 +1,7 @@
 (() => {
   const CAP = 200;
   const RESERVED = 88;         // seats taken (set by JK44)
-  const FACES = 15;            // real guest photos shown on the wall, newest first
+  const FACES = 20;            // real guest photos shown on the wall: the first 20 to sign up
   const CFG = window.RSVP_CONFIG || {};
   const $ = id => document.getElementById(id);
 
@@ -53,14 +53,14 @@
   // Faces wall: the first real guests, then greyed-out seats for everyone else holding one
   function wall(guests) {
     const ul = $("guests"); ul.textContent = "";
-    const real = guests.filter(g => typeof g.photo === "string" && g.photo.startsWith("data:image/")).reverse().slice(0, FACES);
+    const real = guests.filter(g => typeof g.photo === "string" && g.photo.startsWith("data:image/")).slice(0, FACES);
     real.forEach(g => {
       const li = document.createElement("li");
       const im = document.createElement("img"); im.src = g.photo; im.alt = ""; im.loading = "lazy"; li.appendChild(im);
       const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = String(g.name || "Guest").split(" ")[0].slice(0, 20); li.appendChild(nm);
       ul.appendChild(li);
     });
-    const ghosts = matchMedia("(max-width: 640px)").matches ? 2 : 4;
+    const ghosts = matchMedia("(max-width: 640px)").matches ? 3 : 4;
     for (let i = 0; i < ghosts; i++) {
       const li = document.createElement("li"); li.className = "ghost"; li.setAttribute("aria-hidden", "true");
       li.style.setProperty("--fade", (1 - i / (ghosts + 2)).toFixed(2));
