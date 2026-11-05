@@ -59,10 +59,6 @@ h1, h2, h3 { font-family: var(--display); font-stretch: 125%; text-wrap: balance
 
 /* Hero */
 .hero { padding-block: 40px 28px; display: grid; gap: 28px; }
-.hero-row { display: grid; grid-template-columns: minmax(0, 1fr) clamp(120px, 31vw, 480px); gap: clamp(16px, 3vw, 44px); align-items: center; }
-.hero-photo { margin: 0; min-width: 0; }
-.hero-photo img { width: 100%; height: auto; aspect-ratio: 900 / 921; object-fit: cover; display: block; border-radius: 2px; box-shadow: 0 0 0 1px var(--poster-edge); }
-@media (max-width: 560px) { .hero-row { grid-template-columns: minmax(0, 1fr) clamp(84px, 26vw, 128px); gap: 12px; } .hero .hero-row h1 { font-size: min(44px, 10.6vw); } }
 .hero-top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 24px; }
 .hero h1 { font-weight: 900; font-size: clamp(44px, 9.5vw, 116px); line-height: .88; letter-spacing: -.02em; text-transform: uppercase; }
 .hero h1 { text-shadow: 0 0 4px rgba(255, 243, 214, .55), 0 0 18px rgba(227, 173, 60, .35), 0 0 42px rgba(240, 57, 31, .25); }
@@ -264,10 +260,7 @@ footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
       <span class="label">JK44 Studio presents</span>
       <span class="label">Three films · One night</span>
     </div>
-    <div class="hero-row">
-      <h1>Cinema Night <span>Madrid</span></h1>
-      <figure class="hero-photo"><img src="../assets/hero-seats.jpg" alt="A rider in a ski helmet and goggles sitting alone among red cinema seats" width="900" height="921"></figure>
-    </div>
+    <h1>Cinema Night <span>Madrid</span></h1>
     <div class="marquee">
       <div class="board">
         <div class="bulbs" aria-hidden="true"></div>
