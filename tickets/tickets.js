@@ -1,6 +1,6 @@
 (() => {
   const CAP = 200;
-  const RESERVED = 114;        // seats taken (set by JK44)
+  const RESERVED = 132;        // seats taken (set by JK44)
   const FACES = 20;            // real guest photos shown on the wall: the first 20 to sign up
   const CFG = window.RSVP_CONFIG || {};
   const $ = id => document.getElementById(id);
