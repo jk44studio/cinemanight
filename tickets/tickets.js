@@ -1,8 +1,6 @@
 (() => {
   const CAP = 200;
   const RESERVED = 88;         // seats taken (set by JK44)
-  const PRICE = 12;            // EUR per ticket
-  const MAX_PER_ORDER = 6;
   const FACES = 15;            // real guest photos shown on the wall, newest first
   const CFG = window.RSVP_CONFIG || {};
   const $ = id => document.getElementById(id);
@@ -88,21 +86,12 @@
   }
   loadFaces();
 
-  // Ticket quantity and total
-  let qty = 1;
-  const maxQty = Math.max(1, Math.min(MAX_PER_ORDER, left));
-  function renderQty() {
-    $("qty").textContent = qty;
-    $("total").textContent = `${qty * PRICE} €`;
-    $("buy").textContent = left > 0 ? `Buy ${qty} ticket${qty === 1 ? "" : "s"} · ${qty * PRICE} €` : "Sold out";
-    $("minus").disabled = qty <= 1;
-    $("plus").disabled = qty >= maxQty;
+  // Buy button goes to Stripe Checkout; buyers come back with ?pagado=1
+  const buy = $("buy");
+  if (CFG.ticketCheckout) buy.href = CFG.ticketCheckout;
+  if (left <= 0) { buy.textContent = "Sold out"; buy.removeAttribute("href"); buy.setAttribute("aria-disabled", "true"); }
+  if (new URLSearchParams(location.search).has("pagado")) {
+    $("paid").hidden = false;
+    $("paid").scrollIntoView({ block: "center" });
   }
-  $("minus").onclick = () => { qty = Math.max(1, qty - 1); renderQty(); };
-  $("plus").onclick = () => { qty = Math.min(maxQty, qty + 1); renderQty(); };
-  $("buy").onclick = () => {
-    if (CFG.ticketCheckout) { location.href = CFG.ticketCheckout; return; }
-    $("buymsg").textContent = "Ticket sales open very soon. Check back shortly.";
-  };
-  renderQty();
 })();

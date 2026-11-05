@@ -226,6 +226,10 @@ footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
 .urgency i { width: 8px; height: 8px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 0 var(--glow); }
 .fine { font-size: 13px; color: var(--muted); }
 #buymsg:empty { display: none; }
+a.btn.buy { display: block; text-align: center; text-decoration: none; }
+.paid { display: grid; gap: 6px; padding: 14px 16px; border-radius: 3px; border: 1px solid var(--mustard); background: rgba(227, 173, 60, .1); }
+.paid strong { font-family: var(--display); font-stretch: 115%; text-transform: uppercase; color: var(--mustard); }
+.paid span { color: var(--cream); font-size: 15px; }
 .guests li.ghost { --fade: 1; opacity: var(--fade); }
 .guests .sil { width: 76px; height: 76px; border-radius: 50%; border: 2px dashed var(--line); background:
   radial-gradient(circle at 50% 38%, var(--line) 0 13px, transparent 14px),
@@ -300,18 +304,14 @@ footer b { color: var(--red); font-family: var(--display); font-stretch: 125%; }
         <li>Monozukuri, Glacier Surfing and the world premiere of BEDI</li>
         <li>Thu 3 Dec 2026 · 19:00 · Súper 8 Cinema, Madrid</li>
       </ul>
-      <div class="qty-row">
-        <span class="stepper" role="group" aria-label="Number of tickets">
-          <button type="button" id="minus" aria-label="One ticket fewer">−</button>
-          <output id="qty" aria-live="polite">1</output>
-          <button type="button" id="plus" aria-label="One ticket more">+</button>
-        </span>
-        <span class="total">Total <b id="total">12 €</b></span>
+      <div class="paid" id="paid" role="status" hidden>
+        <strong>Payment received. Thank you!</strong>
+        <span>Your seat is booked. See you on Thursday 3 December at 19:00, Súper 8 Cinema, Gran Vía 46.</span>
       </div>
-      <button class="btn" type="button" id="buy">Buy 1 ticket · 12 €</button>
+      <a class="btn buy" id="buy" href="https://buy.stripe.com/9B6aEX47B1GhbW80bO7IY00">Buy tickets · 12 € each</a>
       <div class="urgency"><i></i><span><span id="seats-left">112</span> seats left of 200</span></div>
       <p class="msg" id="buymsg" role="status"></p>
-      <p class="fine">Secure card payment.</p>
+      <p class="fine">Secure payment with Stripe: card, Apple Pay or Google Pay. Up to 6 tickets per order.</p>
     </section>
 
     <section class="house" aria-labelledby="house-h">
