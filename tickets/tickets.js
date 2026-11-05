@@ -62,7 +62,7 @@
       const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = String(g.name || "Guest").split(" ")[0].slice(0, 20); li.appendChild(nm);
       ul.appendChild(li);
     });
-    const ghosts = Math.max(0, FACES + slots - real.length);
+    const ghosts = 0;   // never show placeholder profiles, only real guests
     for (let i = 0; i < ghosts; i++) {
       const li = document.createElement("li"); li.className = "ghost"; li.setAttribute("aria-hidden", "true");
       li.style.setProperty("--fade", (1 - i / (ghosts + 2)).toFixed(2));
