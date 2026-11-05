@@ -1,9 +1,9 @@
 (() => {
   const CAP = 200;
-  const RESERVED = 160 + 17;   // seats held for sponsors (160) and friends (17)
+  const RESERVED = 88;         // seats taken (set by JK44)
   const PRICE = 12;            // EUR per ticket
   const MAX_PER_ORDER = 6;
-  const FACES = 12;            // real guest photos shown on the wall
+  const FACES = 15;            // real guest photos shown on the wall, newest first
   const CFG = window.RSVP_CONFIG || {};
   const $ = id => document.getElementById(id);
 
@@ -29,7 +29,7 @@
 
   // Counter and meter
   $("count").textContent = taken;
-  $("left").textContent = left > 0 ? `Only ${left} seat${left === 1 ? "" : "s"} left` : "Sold out";
+  $("left").textContent = left <= 0 ? "Sold out" : `${left <= 50 ? "Only " : ""}${left} seat${left === 1 ? "" : "s"} left`;
   $("seats-left").textContent = left;
   const meter = $("meter");
   for (let i = 0; i < 50; i++) {
@@ -55,14 +55,14 @@
   // Faces wall: the first real guests, then greyed-out seats for everyone else holding one
   function wall(guests) {
     const ul = $("guests"); ul.textContent = "";
-    const real = guests.filter(g => typeof g.photo === "string" && g.photo.startsWith("data:image/")).slice(0, FACES);
+    const real = guests.filter(g => typeof g.photo === "string" && g.photo.startsWith("data:image/")).reverse().slice(0, FACES);
     real.forEach(g => {
       const li = document.createElement("li");
       const im = document.createElement("img"); im.src = g.photo; im.alt = ""; im.loading = "lazy"; li.appendChild(im);
       const nm = document.createElement("span"); nm.className = "nm"; nm.textContent = String(g.name || "Guest").split(" ")[0].slice(0, 20); li.appendChild(nm);
       ul.appendChild(li);
     });
-    const ghosts = matchMedia("(max-width: 640px)").matches ? 5 : 11;
+    const ghosts = matchMedia("(max-width: 640px)").matches ? 2 : 4;
     for (let i = 0; i < ghosts; i++) {
       const li = document.createElement("li"); li.className = "ghost"; li.setAttribute("aria-hidden", "true");
       li.style.setProperty("--fade", (1 - i / (ghosts + 2)).toFixed(2));
