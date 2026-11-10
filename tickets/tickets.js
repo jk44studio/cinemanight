@@ -1,6 +1,6 @@
 (() => {
   const CAP = 200;
-  const RESERVED = 161;        // seats taken (set by JK44)
+  const RESERVED = 161;        // seats taken outside Stripe (set by JK44); Stripe sales are added live
   const FACES = 20;            // real guest photos shown on the wall: the first 20 to sign up
   const CFG = window.RSVP_CONFIG || {};
   const $ = id => document.getElementById(id);
@@ -22,33 +22,39 @@
     if (window.ResizeObserver) new ResizeObserver(() => layBulbs(ring)).observe(ring);
   });
 
-  const taken = Math.min(CAP, RESERVED);
-  const left = CAP - taken;
+  let taken = Math.min(CAP, RESERVED);
+  let left = CAP - taken;
 
-  // Counter and meter
-  $("count").textContent = taken;
-  $("left").textContent = left <= 0 ? "Sold out" : `${left <= 50 ? "Only " : ""}${left} seat${left === 1 ? "" : "s"} left`;
-  $("seats-left").textContent = left;
-  const meter = $("meter");
-  for (let i = 0; i < 50; i++) {
-    const cell = document.createElement("i"), filled = taken - i * (CAP / 50);
-    cell.className = filled >= CAP / 50 ? "on" : filled > 0 ? "half" : "";
-    meter.appendChild(cell);
-  }
-
-  // Seat map: 10 rows of 20 with a centre aisle; the open seats are the last ones in the back rows
-  const map = $("seatmap");
-  for (let r = 0; r < CAP / 20; r++) {
-    const row = document.createElement("div"); row.className = "seat-row";
-    for (let c = 0; c < 20; c++) {
-      const n = r * 20 + c, s = document.createElement("span");
-      s.className = n < taken ? "seat taken" : "seat open";
-      s.style.setProperty("--arc", (-(((c - 9.5) / 9.5) ** 2) * 6).toFixed(1) + "px");
-      if (n >= taken) s.style.setProperty("--d", ((n - taken) * 0.07).toFixed(2) + "s");
-      row.appendChild(s);
+  // Counter, meter and seat map; re-rendered whenever the Stripe sales count changes
+  const meter = $("meter"), map = $("seatmap");
+  function renderCounts() {
+    $("count").textContent = taken;
+    $("left").textContent = left <= 0 ? "Sold out" : `${left <= 50 ? "Only " : ""}${left} seat${left === 1 ? "" : "s"} left`;
+    $("seats-left").textContent = Math.max(0, left);
+    meter.textContent = "";
+    for (let i = 0; i < 50; i++) {
+      const cell = document.createElement("i"), filled = taken - i * (CAP / 50);
+      cell.className = filled >= CAP / 50 ? "on" : filled > 0 ? "half" : "";
+      meter.appendChild(cell);
     }
-    map.appendChild(row);
+    // 10 rows of 20 with a centre aisle; the open seats are the last ones in the back rows
+    map.textContent = "";
+    for (let r = 0; r < CAP / 20; r++) {
+      const row = document.createElement("div"); row.className = "seat-row";
+      for (let c = 0; c < 20; c++) {
+        const n = r * 20 + c, s = document.createElement("span");
+        s.className = n < taken ? "seat taken" : "seat open";
+        s.style.setProperty("--arc", (-(((c - 9.5) / 9.5) ** 2) * 6).toFixed(1) + "px");
+        if (n >= taken) s.style.setProperty("--d", ((n - taken) * 0.07).toFixed(2) + "s");
+        row.appendChild(s);
+      }
+      map.appendChild(row);
+    }
+    $("seatmap").parentElement.setAttribute("aria-label", `Seat map: ${taken} of ${CAP} seats taken`);
+    const buy = $("buy");
+    if (left <= 0) { buy.textContent = "Sold out"; buy.removeAttribute("href"); buy.setAttribute("aria-disabled", "true"); }
   }
+  renderCounts();
 
   // Faces wall: the first real guests, then greyed-out seats for everyone else holding one
   function wall(guests) {
@@ -88,10 +94,24 @@
   }
   loadFaces();
 
+  // Tickets sold through Stripe (recorded by the stripe-webhook function); checked every minute
+  async function loadSold() {
+    if (!CFG.supabaseUrl || !CFG.supabaseKey) return;
+    const headers = { apikey: CFG.supabaseKey, "Content-Type": "application/json" };
+    if (CFG.supabaseKey.startsWith("eyJ")) headers.Authorization = "Bearer " + CFG.supabaseKey;
+    try {
+      const r = await fetch(`${CFG.supabaseUrl.replace(/\/$/, "")}/rest/v1/rpc/tickets_sold`, { method: "POST", headers, body: "{}" });
+      if (!r.ok) return;
+      const sold = Number(await r.json()) || 0, next = Math.min(CAP, RESERVED + sold);
+      if (next !== taken) { taken = next; left = CAP - taken; renderCounts(); wall(lastGuests); }
+    } catch {}
+  }
+  loadSold();
+  setInterval(() => { if (!document.hidden) loadSold(); }, 60000);
+
   // Buy button goes to Stripe Checkout; buyers come back with ?pagado=1
   const buy = $("buy");
-  if (CFG.ticketCheckout) buy.href = CFG.ticketCheckout;
-  if (left <= 0) { buy.textContent = "Sold out"; buy.removeAttribute("href"); buy.setAttribute("aria-disabled", "true"); }
+  if (CFG.ticketCheckout && left > 0) buy.href = CFG.ticketCheckout;
   if (new URLSearchParams(location.search).has("pagado")) {
     $("paid").hidden = false;
     $("paid").scrollIntoView({ block: "center" });
