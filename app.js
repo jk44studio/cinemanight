@@ -1,5 +1,5 @@
 (() => {
-  const CAP = 80;   // free RSVP seats (paid tickets are on /tickets)
+  const CAP = 100;  // free RSVP seats (paid tickets are on /tickets)
   const CFG = window.RSVP_CONFIG || {};
   const LIVE = !!(CFG.supabaseUrl && CFG.supabaseKey);
   const KEY = "cinemanight-rsvp";
