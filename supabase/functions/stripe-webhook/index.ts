@@ -13,7 +13,7 @@ const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SE
 
 // ---- Stripe signature (Stripe-Signature: t=...,v1=...) ----
 async function verify(raw: string, header: string | null, secret: string): Promise<boolean> {
-  if (!header) return false;
+  if (!header || !secret) return false;
   const parts = Object.fromEntries(header.split(",").map((p) => p.split("=", 2)));
   const t = Number(parts.t);
   const sigs = header.split(",").filter((p) => p.startsWith("v1=")).map((p) => p.slice(3));
@@ -53,13 +53,13 @@ ${row("Pedido", ref)}
 <p style="margin:0 0 4px;color:#f3ead9;font:900 17px/1.3 Arial Black,Arial,sans-serif;text-transform:uppercase">Tres películas. Pizza. Cerveza. Cookies.</p>
 <p style="margin:0 0 18px;color:#e3ad3c;font:12px/1.4 'Courier New',monospace;letter-spacing:.1em;text-transform:uppercase">Todo incluido con tu entrada</p>
 <p style="margin:0 0 22px;color:#a39686;font:15px/1.5 Arial,sans-serif">Monozukuri · Glacier Surfing · BEDI (estreno mundial)</p>
-<a href="${SITE}" style="display:inline-block;background:#f0391f;color:#f3ead9;text-decoration:none;font:800 15px/1 Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:14px 20px;border-radius:3px">Ver el evento</a>
+<a href="${SITE}/tickets/" style="display:inline-block;background:#f0391f;color:#f3ead9;text-decoration:none;font:800 15px/1 Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:14px 20px;border-radius:3px">Ver el evento</a>
 </td></tr>
 <tr><td style="padding:22px 28px 26px;color:#a39686;font:13px/1.5 Arial,sans-serif">
 <p style="margin:0 0 8px"><i>EN · You have ${o.quantity} ticket${o.quantity === 1 ? "" : "s"} for JK44 Cinema Night Madrid, Thursday 3 December 2026 at 19:00, Súper 8 Cinema, Gran Vía 46. Films, pizza, beer and cookies included. Just give your name at the door.</i></p>
 <p style="margin:0">¿Dudas? Responde a este email. · Producido por <a href="https://jk44films.com" style="color:#f0391f;text-decoration:none"><b>JK44</b></a></p>
 </td></tr></table></td></tr></table></body></html>`;
-  const text = `¡Entrada confirmada!\n\nTienes ${qty} para JK44 Cinema Night Madrid.\nJueves 3 de diciembre de 2026 · 19:00\nSúper 8 Cinema · Gran Vía, 46 · 28013 Madrid\nTotal: ${euros(o.amount_cents)} · Pedido ${ref}\n\nTres películas, pizza, cerveza y cookies: todo incluido.\nEn la puerta solo necesitamos tu nombre.\n\n${SITE}`;
+  const text = `¡Entrada confirmada!\n\nTienes ${qty} para JK44 Cinema Night Madrid.\nJueves 3 de diciembre de 2026 · 19:00\nSúper 8 Cinema · Gran Vía, 46 · 28013 Madrid\nTotal: ${euros(o.amount_cents)} · Pedido ${ref}\n\nTres películas, pizza, cerveza y cookies: todo incluido.\nEn la puerta solo necesitamos tu nombre.\n\n${SITE}/tickets/`;
   return { subject: `Tu entrada para JK44 Cinema Night Madrid · 3 dic · ${qty}`, html, text };
 }
 
