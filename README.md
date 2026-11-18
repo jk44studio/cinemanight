@@ -1,7 +1,7 @@
 # JK44 Cinema Night Madrid
 
 RSVP page for the JK44 Studio premiere of **Monozukuri**, **Glacier Surfing** and **BEDI**
-at Súper 8 Cinema, Madrid. Thursday 3 December 2026, 19:00. 130 free RSVP seats (paid tickets on /tickets).
+at Sala Equis (Calle del Duque de Alba 4), Madrid. Thursday 3 December 2026, 19:00. 130 free RSVP seats (paid tickets on /tickets).
 
 Live at **https://cinemanight.jk44films.com** (GitHub Pages). Guest list stored in Supabase.
 

@@ -7,7 +7,10 @@ const UNIT_CENTS = 1200;
 const FROM = "JK44 Cinema Night <tickets@jk44films.com>";
 const OWNER = "jk44studio@gmail.com";
 const SITE = "https://cinemanight.jk44films.com";
-const MAPS = "https://www.google.com/maps/search/?api=1&query=Cine+Super+8+Palacio+de+la+Prensa+Gran+V%C3%ADa+46+28013+Madrid";
+const MAPS = "https://www.google.com/maps/search/?api=1&query=Sala+Equis+Calle+del+Duque+de+Alba+4+28012+Madrid";
+const VENUE = "Sala Equis";
+const ADDRESS = "Calle del Duque de Alba, 4 · 28012 Madrid";
+const METRO = "Metro Tirso de Molina (L1) · La Latina (L5)";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
@@ -29,7 +32,7 @@ const euros = (cents: number) => (cents / 100).toLocaleString("es-ES", { minimum
 
 type Order = { session_id: string; name: string | null; email: string; quantity: number; amount_cents: number };
 
-function buyerEmail(o: Order) {
+function buyerEmail(o: Order, venueChange = false) {
   const first = (o.name || "").trim().split(/\s+/)[0] || "";
   const ref = o.session_id.slice(-8).toUpperCase();
   const qty = `${o.quantity} entrada${o.quantity === 1 ? "" : "s"}`;
@@ -40,12 +43,15 @@ function buyerEmail(o: Order) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#181513;border:2px solid #f0391f;border-radius:6px">
 <tr><td><img src="${SITE}/assets/og-share.jpg" width="560" alt="JK44 Cinema Night Madrid" style="display:block;width:100%;height:auto;border-radius:4px 4px 0 0"></td></tr>
 <tr><td style="padding:28px 28px 8px">
+${venueChange ? `<div style="margin:0 0 20px;padding:14px 16px;border:2px solid #e3ad3c;border-radius:4px;background:#2a2112">
+<p style="margin:0 0 4px;color:#e3ad3c;font:900 15px/1.3 Arial Black,Arial,sans-serif;text-transform:uppercase">Cambio de sala · New venue</p>
+<p style="margin:0;color:#f3ead9;font:15px/1.5 Arial,sans-serif">Cinema Night Madrid se traslada a <b>${VENUE}</b>, ${ADDRESS}. La fecha y la hora no cambian y tu entrada sigue siendo válida: no tienes que hacer nada.</p></div>` : ""}
 <p style="margin:0 0 6px;color:#e3ad3c;font:12px/1.4 'Courier New',monospace;letter-spacing:.14em;text-transform:uppercase">Entrada confirmada · Ticket confirmed</p>
 <h1 style="margin:0 0 12px;color:#f3ead9;font:900 30px/1.1 Arial Black,Arial,sans-serif;text-transform:uppercase">${first ? `¡Nos vemos, ${esc(first)}!` : "¡Nos vemos en el cine!"}</h1>
 <p style="margin:0 0 18px;color:#f3ead9;font:16px/1.5 Arial,sans-serif">Tienes <b>${qty}</b> para <b>JK44 Cinema Night Madrid</b>. Guarda este email: en la puerta solo necesitamos tu nombre.</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #2e2824;border-bottom:1px solid #2e2824;margin:0 0 18px">
 ${row("Cuándo", "Jueves 3 de diciembre de 2026 · 19:00")}
-${row("Dónde", `Súper 8 Cinema · Palacio de la Prensa<br>Gran Vía, 46 · 28013 Madrid<br><a href="${MAPS}" style="color:#e3ad3c">Abrir en Maps ↗</a>`)}
+${row("Dónde", `<b>${VENUE}</b><br>${ADDRESS}<br>${METRO}<br><a href="${MAPS}" style="color:#e3ad3c">Abrir en Maps ↗</a>`)}
 ${row("Entradas", `${qty} · ${euros(o.amount_cents)}`)}
 ${row("A nombre de", esc(o.name || o.email))}
 ${row("Pedido", ref)}
@@ -56,11 +62,14 @@ ${row("Pedido", ref)}
 <a href="${SITE}/tickets/" style="display:inline-block;background:#f0391f;color:#f3ead9;text-decoration:none;font:800 15px/1 Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;padding:14px 20px;border-radius:3px">Ver el evento</a>
 </td></tr>
 <tr><td style="padding:22px 28px 26px;color:#a39686;font:13px/1.5 Arial,sans-serif">
-<p style="margin:0 0 8px"><i>EN · You have ${o.quantity} ticket${o.quantity === 1 ? "" : "s"} for JK44 Cinema Night Madrid, Thursday 3 December 2026 at 19:00, Súper 8 Cinema, Gran Vía 46. Films, pizza, beer and cookies included. Just give your name at the door.</i></p>
+<p style="margin:0 0 8px"><i>EN · You have ${o.quantity} ticket${o.quantity === 1 ? "" : "s"} for JK44 Cinema Night Madrid, Thursday 3 December 2026 at 19:00 at ${VENUE}, Calle del Duque de Alba 4, Madrid${venueChange ? " (new venue, your ticket is still valid)" : ""}. Films, pizza, beer and cookies included. Just give your name at the door.</i></p>
 <p style="margin:0">¿Dudas? Responde a este email. · Producido por <a href="https://jk44films.com" style="color:#f0391f;text-decoration:none"><b>JK44</b></a></p>
 </td></tr></table></td></tr></table></body></html>`;
-  const text = `¡Entrada confirmada!\n\nTienes ${qty} para JK44 Cinema Night Madrid.\nJueves 3 de diciembre de 2026 · 19:00\nSúper 8 Cinema · Gran Vía, 46 · 28013 Madrid\nTotal: ${euros(o.amount_cents)} · Pedido ${ref}\n\nTres películas, pizza, cerveza y cookies: todo incluido.\nEn la puerta solo necesitamos tu nombre.\n\n${SITE}/tickets/`;
-  return { subject: `Tu entrada para JK44 Cinema Night Madrid · 3 dic · ${qty}`, html, text };
+  const text = `${venueChange ? `CAMBIO DE SALA: Cinema Night Madrid se traslada a ${VENUE}, ${ADDRESS}. Misma fecha y hora; tu entrada sigue siendo válida.\n\n` : ""}¡Entrada confirmada!\n\nTienes ${qty} para JK44 Cinema Night Madrid.\nJueves 3 de diciembre de 2026 · 19:00\n${VENUE} · ${ADDRESS}\n${METRO}\nTotal: ${euros(o.amount_cents)} · Pedido ${ref}\n\nTres películas, pizza, cerveza y cookies: todo incluido.\nEn la puerta solo necesitamos tu nombre.\n\n${SITE}/tickets/`;
+  const subject = venueChange
+    ? `Cambio de sala: JK44 Cinema Night Madrid ahora en ${VENUE} · 3 dic · ${qty}`
+    : `Tu entrada para JK44 Cinema Night Madrid · 3 dic · ${qty}`;
+  return { subject, html, text };
 }
 
 async function send(to: string, subject: string, html: string, text: string, replyTo?: string) {
@@ -101,10 +110,29 @@ async function backfill(token: string) {
   return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
 }
 
+// One-off venue change notice: header x-venue-notice must match app_config.backfill_token
+async function venueNotice(token: string) {
+  const { data: cfg } = await db.from("app_config").select("value").eq("key", "backfill_token").maybeSingle();
+  if (!cfg?.value || cfg.value !== token) return new Response("forbidden", { status: 403 });
+  const { data: pending } = await db.from("ticket_orders").select("*").is("venue_notice_sent_at", null);
+  const results: string[] = [];
+  for (const o of pending || []) {
+    try {
+      const m = buyerEmail(o, true);
+      await send(o.email, m.subject, m.html, m.text, OWNER);
+      await db.from("ticket_orders").update({ venue_notice_sent_at: new Date().toISOString() }).eq("session_id", o.session_id);
+      results.push(`sent ${o.session_id.slice(-8)}`);
+    } catch (e) { results.push(`failed ${o.session_id.slice(-8)}: ${e}`); }
+  }
+  return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("ok");
   const bf = req.headers.get("x-backfill");
   if (bf) return backfill(bf);
+  const vn = req.headers.get("x-venue-notice");
+  if (vn) return venueNotice(vn);
   const raw = await req.text();
   if (!(await verify(raw, req.headers.get("stripe-signature"), Deno.env.get("STRIPE_WEBHOOK_SECRET") || ""))) {
     return new Response("bad signature", { status: 400 });
@@ -122,7 +150,7 @@ Deno.serve(async (req) => {
     quantity: Math.max(1, Math.round((s.amount_total || UNIT_CENTS) / UNIT_CENTS)),
     amount_cents: s.amount_total || 0,
   };
-  await db.from("ticket_orders").upsert({ ...order, paid_at: new Date((s.created || Date.now() / 1000) * 1000).toISOString() }, { onConflict: "session_id", ignoreDuplicates: true });
+  await db.from("ticket_orders").upsert({ ...order, venue_notice_sent_at: new Date().toISOString(), paid_at: new Date((s.created || Date.now() / 1000) * 1000).toISOString() }, { onConflict: "session_id", ignoreDuplicates: true });
   const { data: row } = await db.from("ticket_orders").select("email_sent_at, owner_notified_at").eq("session_id", order.session_id).single();
   try {
     await deliver(order, row || { email_sent_at: null, owner_notified_at: null });
