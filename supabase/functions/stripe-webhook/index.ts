@@ -127,12 +127,74 @@ async function venueNotice(token: string) {
   return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
 }
 
+// Reminder with personal Voy / No puedo ir links (page /confirmar). Header x-reminder must match app_config.backfill_token;
+// body {"kind": "test" | "ticket" | "guest"} picks who gets it; each row is sent once (reminder_sent_at).
+function reminderEmail({ name, kind, quantity, token }: { name: string | null; kind: string; quantity: number | null; token: string }) {
+  const first = (name || "").trim().split(/\s+/)[0] || "";
+  const yes = `${SITE}/confirmar/?t=${token}&r=si`, no = `${SITE}/confirmar/?t=${token}&r=no`;
+  const what = kind === "ticket" ? `tus <b>${quantity} entrada${quantity === 1 ? "" : "s"}</b>` : `tu <b>plaza en la lista de invitados</b>`;
+  const row = (k: string, v: string) => `<tr><td style="padding:6px 0;color:#a39686;font:13px/1.4 Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;width:110px;vertical-align:top">${k}</td><td style="padding:6px 0;color:#f3ead9;font:16px/1.4 Arial,sans-serif">${v}</td></tr>`;
+  const btn = (href: string, label: string, bg: string, fg: string, border: string) => `<a href="${href}" style="display:block;text-align:center;background:${bg};color:${fg};border:2px solid ${border};text-decoration:none;font:800 16px/1 Arial,sans-serif;letter-spacing:.05em;text-transform:uppercase;padding:16px 10px;border-radius:3px">${label}</a>`;
+  const html = `<!doctype html><html lang="es"><body style="margin:0;background:#0e0c0b">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0e0c0b"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#181513;border:2px solid #f0391f;border-radius:6px">
+<tr><td><img src="${SITE}/assets/og-share.jpg" width="560" alt="JK44 Cinema Night Madrid" style="display:block;width:100%;height:auto;border-radius:4px 4px 0 0"></td></tr>
+<tr><td style="padding:28px 28px 6px">
+<p style="margin:0 0 6px;color:#e3ad3c;font:12px/1.4 'Courier New',monospace;letter-spacing:.14em;text-transform:uppercase">Recordatorio · Faltan 7 días</p>
+<h1 style="margin:0 0 12px;color:#f3ead9;font:900 30px/1.1 Arial Black,Arial,sans-serif;text-transform:uppercase">${first ? `${esc(first)}, ¿vienes el jueves?` : "¿Vienes el jueves?"}</h1>
+<p style="margin:0 0 18px;color:#f3ead9;font:16px/1.5 Arial,sans-serif">Tienes ${what} para <b>JK44 Cinema Night Madrid</b>. Confírmanos con un clic si vienes: así preparamos la sala, la pizza y la cerveza para todos.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 10px"><tr>
+<td width="50%" style="padding-right:6px">${btn(yes, "✓ Voy", "#f0391f", "#f3ead9", "#f0391f")}</td>
+<td width="50%" style="padding-left:6px">${btn(no, "No puedo ir", "transparent", "#a39686", "#4a3f38")}</td>
+</tr></table>
+<p style="margin:0 0 22px;color:#a39686;font:13px/1.5 Arial,sans-serif">Si no puedes venir, dínoslo: tu plaza pasa a otra persona.</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #2e2824;border-bottom:1px solid #2e2824;margin:0 0 18px">
+${row("Cuándo", "<b>Jueves 3 de diciembre</b> · 19:00")}
+${row("Dónde", `<b>Sala Equis</b><br>Calle del Duque de Alba, 4 · 28012 Madrid<br>Metro Tirso de Molina (L1) · La Latina (L5)<br><a href="${MAPS}" style="color:#e3ad3c">Abrir en Maps ↗</a>`)}
+${row("En la puerta", "Solo tu nombre" + (kind === "ticket" ? " (la entrada va a tu nombre)" : ""))}
+</table>
+<p style="margin:0 0 4px;color:#f3ead9;font:900 17px/1.3 Arial Black,Arial,sans-serif;text-transform:uppercase">Tres películas. Pizza. Cerveza. Cookies.</p>
+<p style="margin:0 0 20px;color:#a39686;font:15px/1.5 Arial,sans-serif">Monozukuri · Glacier Surfing · BEDI (estreno mundial)</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 6px;background:#0e0c0b;border:1px dashed #4a3f38;border-radius:4px"><tr><td style="padding:14px 16px">
+<p style="margin:0 0 4px;color:#e3ad3c;font:12px/1.4 'Courier New',monospace;letter-spacing:.12em;text-transform:uppercase">Calienta motores</p>
+<p style="margin:0 0 10px;color:#f3ead9;font:15px/1.5 Arial,sans-serif">Surfea el glaciar, baja la montaña de BEDI y entra en el taller de Monozukuri. ¿Llegas al final de la trilogía?</p>
+<a href="${SITE}/juego/" style="color:#f0391f;font:800 14px/1 Arial,sans-serif;letter-spacing:.06em;text-transform:uppercase;text-decoration:none">Jugar a Cinema Night Arcade →</a>
+</td></tr></table>
+</td></tr>
+<tr><td style="padding:18px 28px 26px;color:#a39686;font:13px/1.5 Arial,sans-serif">
+<p style="margin:0 0 8px"><i>EN · Reminder: JK44 Cinema Night is next Thursday, 3 December at 19:00 at Sala Equis, Calle del Duque de Alba 4, Madrid. Tap "Voy" to confirm you're coming or "No puedo ir" if you can't make it.</i></p>
+<p style="margin:0">¿Dudas? Responde a este email. · Producido por <a href="https://jk44films.com" style="color:#f0391f;text-decoration:none"><b>JK44</b></a></p>
+</td></tr></table></td></tr></table></body></html>`;
+  const subject = `${first ? first + ", ¿" : "¿"}vienes el jueves? Confirma tu asistencia · JK44 Cinema Night`;
+  const text = `${first ? first + ", ¿" : "¿"}vienes el jueves?\n\nJK44 Cinema Night Madrid · Jueves 3 de diciembre · 19:00\n${VENUE} · ${ADDRESS}\n\nVoy: ${yes}\nNo puedo ir: ${no}\n\nJuego: ${SITE}/juego/`;
+  return { subject, html, text };
+}
+
+async function reminders(token: string, kind: string) {
+  const { data: cfg } = await db.from("app_config").select("value").eq("key", "backfill_token").maybeSingle();
+  if (!cfg?.value || cfg.value !== token) return new Response("forbidden", { status: 403 });
+  if (!["test", "ticket", "guest"].includes(kind)) return new Response("bad kind", { status: 400 });
+  const { data: pending } = await db.from("attendance").select("*").eq("kind", kind).is("reminder_sent_at", null).limit(90);
+  const results: string[] = [];
+  for (const a of pending || []) {
+    try {
+      const m = reminderEmail(a);
+      await send(a.email, m.subject, m.html, m.text, OWNER);
+      await db.from("attendance").update({ reminder_sent_at: new Date().toISOString() }).eq("token", a.token);
+      results.push(`sent ${a.ref_id}`);
+    } catch (e) { results.push(`failed ${a.ref_id}: ${e}`); }
+  }
+  return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("ok");
   const bf = req.headers.get("x-backfill");
   if (bf) return backfill(bf);
   const vn = req.headers.get("x-venue-notice");
   if (vn) return venueNotice(vn);
+  const rm = req.headers.get("x-reminder");
+  if (rm) return reminders(rm, String((await req.json().catch(() => ({})))?.kind || ""));
   const raw = await req.text();
   if (!(await verify(raw, req.headers.get("stripe-signature"), Deno.env.get("STRIPE_WEBHOOK_SECRET") || ""))) {
     return new Response("bad signature", { status: 400 });
