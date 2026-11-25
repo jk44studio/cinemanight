@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Confirma tu asistencia · JK44 Cinema Night</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#0e0c0b">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root { --bg: #0e0c0b; --panel: #181513; --line: #4a3f38; --cream: #f3ead9; --muted: #a39686; --red: #f0391f; --mustard: #e3ad3c; --neon: #ff5a3c; --glow: rgba(240, 57, 31, .55); color-scheme: dark;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: var(--bg); color: var(--cream); font: 16px/1.5 "Archivo", "Helvetica Neue", Arial, sans-serif;
+  padding-block: 24px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+[hidden] { display: none !important; }
+.card { width: 100%; max-width: 460px; border: 2px solid var(--neon); border-radius: 6px; background: var(--panel); padding: 28px 24px; display: grid; gap: 14px; box-shadow: 0 0 22px var(--glow), 0 0 60px rgba(240,57,31,.2); }
+.k { font: 500 12px "IBM Plex Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--mustard); }
+h1 { margin: 0; font-family: "Archivo", "Arial Black", sans-serif; font-stretch: 125%; font-weight: 900; text-transform: uppercase; font-size: clamp(28px, 8vw, 36px); line-height: 1; text-wrap: balance; }
+p { margin: 0; }
+.m { color: var(--muted); }
+.b { display: block; text-align: center; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; padding: 14px; border-radius: 3px; text-decoration: none; font-family: inherit; font-size: 15px; cursor: pointer; border: 0; width: 100%; }
+.r { background: var(--red); color: var(--cream); box-shadow: 0 0 16px var(--glow); }
+.g { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+.b:focus-visible { outline: 2px solid var(--mustard); outline-offset: 3px; }
+.foot { font: 12px "IBM Plex Mono", monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<main class="card" aria-live="polite">
+  <div id="loading"><span class="k">Un momento…</span></div>
+
+  <div id="yes" hidden style="display:grid;gap:14px">
+    <span class="k">Asistencia confirmada ✓</span>
+    <h1 id="yes-title">¡Te esperamos!</h1>
+    <p>Jueves 3 de diciembre · 19:00<br><b>Sala Equis</b> · Calle del Duque de Alba, 4 · Madrid</p>
+    <p class="m" id="yes-detail"></p>
+    <a class="b r" href="../juego/">Jugar a Cinema Night Arcade</a>
+    <button class="b g" type="button" data-set="no">¿Al final no puedes? Avísanos aquí</button>
+  </div>
+
+  <div id="no" hidden style="display:grid;gap:14px">
+    <span class="k">Gracias por avisar</span>
+    <h1>Te echaremos de menos</h1>
+    <p class="m">Hemos liberado tu plaza para otra persona. Si cambias de idea antes del jueves, pulsa abajo.</p>
+    <button class="b r" type="button" data-set="si">Al final sí voy</button>
+  </div>
+
+  <div id="ask" hidden style="display:grid;gap:14px">
+    <span class="k">JK44 Cinema Night · Jueves 3 dic · 19:00</span>
+    <h1 id="ask-title">¿Vienes el jueves?</h1>
+    <p class="m">Sala Equis · Calle del Duque de Alba, 4 · Madrid</p>
+    <button class="b r" type="button" data-set="si">✓ Voy</button>
+    <button class="b g" type="button" data-set="no">No puedo ir</button>
+  </div>
+
+  <div id="bad" hidden style="display:grid;gap:14px">
+    <span class="k">Enlace no válido</span>
+    <h1>No encontramos tu invitación</h1>
+    <p class="m">Usa el enlace del email tal cual, o responde a ese email y te ayudamos.</p>
+    <a class="b g" href="../">Ir a Cinema Night</a>
+  </div>
+
+  <p class="foot">Producido por JK44</p>
+</main>
+
+<script src="../config.js?v=20261125a"></script>
+<script>
+(() => {
+  const CFG = window.RSVP_CONFIG || {};
+  const q = new URLSearchParams(location.search);
+  const token = q.get("t"), wanted = q.get("r");
+  const $ = (id) => document.getElementById(id);
+  const show = (id) => ["loading", "yes", "no", "ask", "bad"].forEach((s) => ($(s).hidden = s !== id));
+
+  async function call(response) {
+    const headers = { apikey: CFG.supabaseKey, "Content-Type": "application/json" };
+    if ((CFG.supabaseKey || "").startsWith("eyJ")) headers.Authorization = "Bearer " + CFG.supabaseKey;
+    const r = await fetch(`${CFG.supabaseUrl.replace(/\/$/, "")}/rest/v1/rpc/confirm_attendance`, {
+      method: "POST", headers, body: JSON.stringify({ p_token: token, p_response: response || null }),
+    });
+    if (!r.ok) throw new Error("request failed");
+    return r.json();
+  }
+
+  function render(a) {
+    if (!a) return show("bad");
+    const first = (a.name || "").trim().split(/\s+/)[0];
+    if (a.response === "si") {
+      $("yes-title").textContent = first ? `¡Te esperamos, ${first}!` : "¡Te esperamos!";
+      $("yes-detail").textContent = a.kind === "guest"
+        ? "Estás en la lista de invitados. En la puerta solo tu nombre."
+        : `${a.quantity} entrada${a.quantity === 1 ? "" : "s"} a nombre de ${a.name}. En la puerta solo tu nombre.`;
+      show("yes");
+    } else if (a.response === "no") show("no");
+    else { $("ask-title").textContent = first ? `${first}, ¿vienes el jueves?` : "¿Vienes el jueves?"; show("ask"); }
+  }
+
+  async function set(r) {
+    show("loading");
+    try { render(await call(r)); } catch { show("bad"); }
+  }
+  document.querySelectorAll("[data-set]").forEach((b) => (b.onclick = () => set(b.dataset.set)));
+
+  if (!token || !/^[0-9a-f-]{36}$/i.test(token)) return show("bad");
+  set(wanted === "si" || wanted === "no" ? wanted : null);
+})();
+</script>
+</body>
+</html>
