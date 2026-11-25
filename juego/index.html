@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cinema Night Arcade · JK44</title>
+<meta name="description" content="Juega la trilogía de JK44 Cinema Night: Glacier Surfing, BEDI y Monozukuri. Jueves 3 de diciembre, Sala Equis, Madrid.">
+<meta name="theme-color" content="#0e0c0b">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://cinemanight.jk44films.com/juego/">
+<meta property="og:title" content="Cinema Night Arcade · JK44">
+<meta property="og:description" content="Surfea el glaciar, baja la montaña de BEDI y entra en el taller de Monozukuri. ¿Llegas al final de la trilogía?">
+<meta property="og:image" content="https://cinemanight.jk44films.com/assets/og-share.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Arcade cabinet: one canvas framed like the site's marquee, overlays for start / end screens */
+:root {
+  --bg: #0e0c0b; --panel: #181513; --line: #2e2824; --cream: #f3ead9; --muted: #a39686;
+  --red: #f0391f; --mustard: #e3ad3c; --neon: #ff5a3c; --glow: rgba(240, 57, 31, .55);
+  --display: "Archivo", "Arial Black", sans-serif; --body: "Archivo", "Helvetica Neue", Arial, sans-serif; --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--cream); font: 16px/1.5 var(--body); }
+[hidden] { display: none !important; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 28px 48px; display: grid; gap: 18px; }
+.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 20px; }
+.label { font-family: var(--mono); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.label a { color: var(--mustard); text-decoration: none; border-bottom: 1px solid currentColor; }
+h1 { margin: 0; font-family: var(--display); font-stretch: 125%; font-weight: 900; text-transform: uppercase; line-height: .9; font-size: clamp(34px, 7vw, 76px); letter-spacing: -.01em;
+  text-shadow: 0 0 4px rgba(255,243,214,.5), 0 0 18px rgba(227,173,60,.3); text-wrap: balance; }
+h1 span { color: var(--red); text-shadow: 0 0 4px var(--neon), 0 0 16px var(--glow), 0 0 40px var(--glow); }
+.cabinet { position: relative; border-radius: 6px; padding: 10px; background: #2a0c07; box-shadow: 0 0 0 2px var(--neon), 0 0 14px var(--glow), 0 0 44px var(--glow); }
+.screen { position: relative; aspect-ratio: 16 / 9; width: 100%; border-radius: 3px; overflow: hidden; background: #000; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+@media (max-width: 640px) { .screen { aspect-ratio: 4 / 5; } }
+canvas { display: block; width: 100%; height: 100%; }
+.overlay { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 20px; background: rgba(14, 12, 11, .82); }
+.overlay .in { display: grid; gap: 14px; justify-items: center; max-width: 520px; }
+.overlay h2 { margin: 0; font-family: var(--display); font-stretch: 125%; font-weight: 900; text-transform: uppercase; font-size: clamp(26px, 5vw, 44px); line-height: 1; }
+.overlay p { margin: 0; color: var(--cream); }
+.overlay .small { font-family: var(--mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.trio { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.trio span { font-family: var(--mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; padding: 5px 9px; border: 1px solid var(--line); border-radius: 3px; }
+.btn { font-family: var(--display); font-stretch: 115%; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; font-size: 16px; border: 0; border-radius: 3px; padding: 14px 22px; cursor: pointer; background: var(--red); color: var(--cream); text-decoration: none; display: inline-block; box-shadow: 0 0 18px var(--glow); }
+.btn.ghost { background: transparent; box-shadow: none; border: 1px solid var(--muted); color: var(--cream); }
+.btn:focus-visible { outline: 2px solid var(--mustard); outline-offset: 3px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.score { font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: clamp(40px, 8vw, 64px); line-height: 1; color: var(--mustard); }
+.loot { font-family: var(--mono); font-size: 13px; letter-spacing: .08em; color: var(--muted); }
+.help { display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: space-between; color: var(--muted); font-size: 14px; }
+.help b { color: var(--cream); font-weight: 600; }
+footer { border-top: 1px solid var(--line); padding-top: 18px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 20px; color: var(--muted); font-size: 14px; }
+footer a { color: var(--mustard); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <span class="label">JK44 Studio · Cinema Night Madrid</span>
+    <span class="label"><a href="../tickets/">Entradas ↗</a></span>
+  </div>
+  <h1>Cinema Night <span>Arcade</span></h1>
+
+  <div class="cabinet">
+    <div class="screen" id="screen">
+      <canvas id="game" aria-label="Juego: Cinema Night Arcade"></canvas>
+
+      <div class="overlay" id="start">
+        <div class="in">
+          <p class="small">La trilogía · 3 niveles</p>
+          <h2>¿Llegas al estreno?</h2>
+          <div class="trio"><span style="color:#e6c25a">1 · Glacier Surfing</span><span style="color:#ff7a45">2 · BEDI</span><span style="color:#ff5a3c">3 · Monozukuri</span></div>
+          <p>Salta los obstáculos y recoge pizza, cerveza y cookies. Tienes 3 vidas.</p>
+          <button class="btn" id="play" type="button">Jugar</button>
+          <p class="small">Toca la pantalla o pulsa espacio · mantén para saltar más alto</p>
+        </div>
+      </div>
+
+      <div class="overlay" id="end" hidden>
+        <div class="in">
+          <p class="small" id="end-kicker">Fin de la función</p>
+          <h2 id="end-title">Casi lo tienes</h2>
+          <div class="score" id="end-score">0</div>
+          <p class="loot" id="end-loot"></p>
+          <p class="small" id="end-best"></p>
+          <div class="row">
+            <button class="btn ghost" id="again" type="button">Otra vez</button>
+            <a class="btn" href="../tickets/">Consigue tu entrada</a>
+          </div>
+          <p class="small">Jueves 3 dic · 19:00 · Sala Equis, Madrid</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="help">
+    <span><b>Glacier Surfing</b> · <b>BEDI</b> · <b>Monozukuri</b>: tres películas, una noche.</span>
+    <span>Pizza, cerveza y cookies incluidas con tu entrada.</span>
+  </div>
+
+  <footer>
+    <span>Sala Equis · Calle del Duque de Alba, 4, Madrid · Jueves 3 dic 2026, 19:00</span>
+    <span><a href="../">Lista de invitados</a> · <a href="../tickets/">Entradas</a></span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById("game"), ctx = canvas.getContext("2d");
+  const screenEl = document.getElementById("screen");
+  const H = 540;                 // logical height; width follows the screen's aspect ratio
+  let W = 960, scale = 1, dpr = 1;
+
+  function resize() {
+    const r = screenEl.getBoundingClientRect();
+    dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+    scale = canvas.height / H; W = canvas.width / scale;
+  }
+  window.addEventListener("resize", resize); resize();
+
+  // ---- the three films ----
+  const STAGES = [
+    { name: "Glacier Surfing", sub: "Patagonia · surf bajo el hielo", sky: ["#1a1608", "#3a3010"], ground: "#0f0d09", accent: "#e6c25a", ink: "#f3e6b8", ride: "board", boardCol: "#efe3b0" },
+    { name: "BEDI", sub: "Georgia · un pueblo fantasma para freeriders", sky: ["#ff8a4a", "#e0441f"], ground: "#ffd9c4", accent: "#ff7a45", ink: "#3a0d05", ride: "snowboard", boardCol: "#1a0703" },
+    { name: "Monozukuri", sub: "Japón · el viaje es el oficio", sky: ["#e2402a", "#9c1c10"], ground: "#2a120c", accent: "#ff5a3c", ink: "#f3ead9", ride: "run", boardCol: "#f3ead9" },
+  ];
+  const STAGE_TIME = 22;                  // seconds per film
+  const GROUND = () => H - 92;
+  const GRAV = 2700, JUMP = -980, PX = () => Math.max(90, W * 0.16);
+
+  // halftone dots for the poster look
+  const dots = document.createElement("canvas"); dots.width = dots.height = 8;
+  { const d = dots.getContext("2d"); d.fillStyle = "#000"; d.beginPath(); d.arc(4, 4, 1.3, 0, Math.PI * 2); d.fill(); }
+  const dotPattern = ctx.createPattern(dots, "repeat");
+
+  let state = "start", stageIdx = 0, stageT = 0, t = 0, speed = 0, score = 0, lives = 3, inv = 0, card = 0;
+  let loot = { pizza: 0, beer: 0, cookie: 0 };
+  let player, obstacles, pickups, flakes, spawnO, spawnP, holding = false, last = 0;
+  const best = () => { try { return +localStorage.getItem("cn-arcade-best") || 0; } catch { return 0; } };
+
+  function reset() {
+    stageIdx = 0; t = 0; score = 0; lives = 3; inv = 0; loot = { pizza: 0, beer: 0, cookie: 0 };
+    startStage();
+  }
+  function startStage() {
+    stageT = 0; card = 1.6; speed = 360 + stageIdx * 60;
+    player = { y: GROUND(), vy: 0, on: true };
+    obstacles = []; pickups = []; spawnO = 1.4; spawnP = 0.8;
+    flakes = Array.from({ length: 90 }, () => ({ x: Math.random() * 2000, y: Math.random() * H, s: 1 + Math.random() * 2.5, v: 40 + Math.random() * 90 }));
+  }
+
+  // ---- input: tap / click / space; hold for a higher jump ----
+  function press() {
+    if (state !== "play") return;
+    holding = true;
+    if (player.on) { player.vy = JUMP; player.on = false; }
+  }
+  function release() { holding = false; if (player && player.vy < -320) player.vy = -320; }
+  screenEl.addEventListener("pointerdown", (e) => { if (e.target === canvas) { e.preventDefault(); press(); } });
+  window.addEventListener("pointerup", release);
+  window.addEventListener("keydown", (e) => { if (e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); if (!e.repeat) press(); } });
+  window.addEventListener("keyup", (e) => { if (e.code === "Space" || e.code === "ArrowUp") release(); });
+
+  document.getElementById("play").onclick = () => { document.getElementById("start").hidden = true; reset(); state = "play"; };
+  document.getElementById("again").onclick = () => { document.getElementById("end").hidden = true; reset(); state = "play"; };
+
+  function finish(won) {
+    state = "end";
+    const total = Math.round(score);
+    let b = best(); if (total > b) { b = total; try { localStorage.setItem("cn-arcade-best", b); } catch {} }
+    document.getElementById("end-kicker").textContent = won ? "Trilogía completada" : `Fin de la función · nivel ${stageIdx + 1}/3`;
+    document.getElementById("end-title").textContent = won ? "¡Te vemos en el estreno!" : ["El glaciar ganó esta vez", "La montaña de BEDI te tumbó", "Casi terminas la pieza"][stageIdx];
+    document.getElementById("end-score").textContent = total;
+    document.getElementById("end-loot").textContent = `🍕 ${loot.pizza}  ·  🍺 ${loot.beer}  ·  🍪 ${loot.cookie}`;
+    document.getElementById("end-best").textContent = `Tu récord: ${b}`;
+    document.getElementById("end").hidden = false;
+  }
+
+  // ---- obstacles per film ----
+  function spawnObstacle() {
+    const s = STAGES[stageIdx].ride;
+    const kinds = s === "board" ? ["ice", "ice", "iceTall"] : s === "snowboard" ? ["pine", "pine", "hut"] : ["horse", "blank", "horse"];
+    const k = kinds[Math.floor(Math.random() * kinds.length)];
+    const size = { ice: [54, 44], iceTall: [46, 78], pine: [46, 82], hut: [74, 58], horse: [70, 48], blank: [36, 70] }[k];
+    obstacles.push({ k, x: W + 40, w: size[0], h: size[1] });
+  }
+  function spawnPickup() {
+    const k = ["pizza", "beer", "cookie"][Math.floor(Math.random() * 3)];
+    pickups.push({ k, x: W + 40, y: GROUND() - 60 - Math.random() * 170, r: 16, bob: Math.random() * 6 });
+  }
+
+  function update(dt) {
+    t += dt;
+    if (card > 0) { card -= dt; return; }
+    stageT += dt; speed += 10 * dt;
+    score += dt * speed * 0.05;
+    if (inv > 0) inv -= dt;
+    // player
+    player.vy += GRAV * dt * (holding && player.vy < 0 ? 0.62 : 1);
+    player.y += player.vy * dt;
+    if (player.y >= GROUND()) { player.y = GROUND(); player.vy = 0; player.on = true; }
+    // spawns
+    spawnO -= dt; spawnP -= dt;
+    if (spawnO <= 0 && stageT < STAGE_TIME - 1.5) { spawnObstacle(); spawnO = (0.75 + Math.random() * 0.9) * (420 / speed) + 0.35; }
+    if (spawnP <= 0 && stageT < STAGE_TIME - 1) { spawnPickup(); spawnP = 0.9 + Math.random() * 1.1; }
+    for (const o of obstacles) o.x -= speed * dt;
+    for (const p of pickups) p.x -= speed * dt;
+    obstacles = obstacles.filter((o) => o.x + o.w > -40);
+    pickups = pickups.filter((p) => p.x > -40 && !p.taken);
+    // collisions (forgiving boxes)
+    const px = PX(), pw = 30, ph = 58, top = player.y - ph;
+    for (const o of obstacles) {
+      if (inv > 0 || o.hit) continue;
+      const ox = o.x + o.w * 0.18, ow = o.w * 0.64, oy = GROUND() - o.h * 0.9;
+      if (px + pw / 2 > ox && px - pw / 2 < ox + ow && player.y > oy) {
+        o.hit = true; lives--; inv = 1.4;
+        if (lives <= 0) return finish(false);
+      }
+    }
+    for (const p of pickups) {
+      const dx = p.x - px, dy = p.y - (top + ph / 2);
+      if (dx * dx + dy * dy < (p.r + 26) ** 2) { p.taken = true; loot[p.k]++; score += 50; }
+    }
+    for (const f of flakes) { f.y += f.v * dt; f.x -= (speed * 0.25 + 20) * dt; if (f.y > H) f.y = -5; if (f.x < 0) f.x += W + 40; }
+    if (stageT >= STAGE_TIME) {
+      score += 250;
+      if (stageIdx === 2) return finish(true);
+      stageIdx++; startStage();
+    }
+  }
+
+  // ---- drawing ----
+  const S = () => STAGES[stageIdx];
+  function bg() {
+    const st = S(), g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, st.sky[0]); g.addColorStop(1, st.sky[1]);
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const off = (t * speed * 0.08) % 600;
+    if (st.ride === "board") {
+      // glacier wall, jagged, slow parallax
+      ctx.fillStyle = st.accent; ctx.beginPath(); ctx.moveTo(0, H);
+      for (let x = -off; x < W + 60; x += 30) { const h = 120 + 70 * Math.abs(Math.sin(x * 0.013 + 1)) + 40 * Math.sin(x * 0.07); ctx.lineTo(x, GROUND() - 40 - h); }
+      ctx.lineTo(W + 60, H); ctx.fill();
+      ctx.fillStyle = "rgba(0,0,0,.25)";
+      for (let x = -off * 1.3; x < W; x += 46) ctx.fillRect(x, GROUND() - 150, 3, 110);
+    } else if (st.ride === "snowboard") {
+      ctx.fillStyle = "rgba(120,24,8,.35)"; ctx.beginPath(); ctx.moveTo(0, H);
+      for (let x = -off; x < W + 80; x += 80) ctx.lineTo(x, GROUND() - 120 - 70 * Math.abs(Math.sin(x * 0.006)));
+      ctx.lineTo(W + 80, H); ctx.fill();
+      // ghost-town huts on the hillside
+      ctx.fillStyle = "rgba(60,12,4,.45)";
+      for (let x = -((t * speed * 0.15) % 300); x < W; x += 300) { hut(x + 60, GROUND() - 60, 40, 30); hut(x + 190, GROUND() - 40, 30, 22); }
+    } else {
+      // rising sun + kanji
+      ctx.fillStyle = "rgba(255,200,160,.18)"; ctx.beginPath(); ctx.arc(W * 0.72, GROUND() - 170, 120, 0, Math.PI * 2); ctx.fill();
+      ctx.save(); ctx.globalAlpha = 0.12; ctx.fillStyle = "#f3ead9"; ctx.font = `900 ${Math.round(H * 0.62)}px serif`; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("物", W * 0.3 - ((t * speed * 0.03) % (W * 0.6)), H * 0.42); ctx.restore();
+    }
+    // ground
+    ctx.fillStyle = st.ground; ctx.fillRect(0, GROUND(), W, H - GROUND());
+    if (st.ride === "board") { ctx.strokeStyle = "rgba(230,194,90,.35)"; ctx.lineWidth = 2; for (let i = 0; i < 6; i++) { const y = GROUND() + 12 + i * 14, o = (t * speed * (0.6 + i * 0.1)) % 90; ctx.beginPath(); for (let x = -o; x < W; x += 90) { ctx.moveTo(x, y); ctx.lineTo(x + 40, y); } ctx.stroke(); } }
+    if (st.ride === "run") { ctx.fillStyle = "rgba(243,234,217,.12)"; const o = (t * speed) % 60; for (let x = -o; x < W; x += 60) ctx.fillRect(x, GROUND(), 2, H - GROUND()); }
+  }
+  function hut(x, y, w, h) { ctx.fillRect(x, y, w, h); ctx.beginPath(); ctx.moveTo(x - 4, y); ctx.lineTo(x + w / 2, y - h * 0.6); ctx.lineTo(x + w + 4, y); ctx.fill(); }
+
+  function obstacle(o) {
+    const gy = GROUND(), st = S();
+    ctx.save();
+    if (o.hit) ctx.globalAlpha = 0.35;
+    if (o.k === "ice" || o.k === "iceTall") {
+      ctx.fillStyle = "#f3ead9"; ctx.beginPath(); ctx.moveTo(o.x, gy);
+      ctx.lineTo(o.x + o.w * 0.1, gy - o.h * 0.7); ctx.lineTo(o.x + o.w * 0.35, gy - o.h); ctx.lineTo(o.x + o.w * 0.6, gy - o.h * 0.8); ctx.lineTo(o.x + o.w * 0.9, gy - o.h * 0.55); ctx.lineTo(o.x + o.w, gy); ctx.fill();
+      ctx.fillStyle = "rgba(230,194,90,.4)"; ctx.fillRect(o.x + o.w * 0.3, gy - o.h * 0.7, 4, o.h * 0.6);
+    } else if (o.k === "pine") {
+      ctx.fillStyle = "#4a1006";
+      for (let i = 0; i < 3; i++) { const y = gy - o.h * (0.25 + i * 0.27); ctx.beginPath(); ctx.moveTo(o.x + o.w / 2, y - o.h * 0.35); ctx.lineTo(o.x + o.w * (0.05 + i * 0.08), y + 6); ctx.lineTo(o.x + o.w * (0.95 - i * 0.08), y + 6); ctx.fill(); }
+      ctx.fillRect(o.x + o.w / 2 - 4, gy - 14, 8, 14);
+      ctx.fillStyle = "#fff4ec"; ctx.fillRect(o.x + o.w * 0.25, gy - o.h * 0.58, o.w * 0.5, 4);
+    } else if (o.k === "hut") {
+      ctx.fillStyle = "#5a1a0a"; hut(o.x, gy - o.h * 0.62, o.w, o.h * 0.62);
+      ctx.fillStyle = "#fff4ec"; ctx.beginPath(); ctx.moveTo(o.x - 6, gy - o.h * 0.62); ctx.lineTo(o.x + o.w / 2, gy - o.h); ctx.lineTo(o.x + o.w + 6, gy - o.h * 0.62); ctx.lineTo(o.x + o.w + 6, gy - o.h * 0.55); ctx.lineTo(o.x + o.w / 2, gy - o.h * 0.9); ctx.lineTo(o.x - 6, gy - o.h * 0.55); ctx.fill();
+      ctx.fillStyle = "#e3ad3c"; ctx.fillRect(o.x + o.w * 0.4, gy - o.h * 0.4, 10, 10);
+    } else if (o.k === "horse") {
+      ctx.strokeStyle = "#f3ead9"; ctx.lineWidth = 5; ctx.beginPath();
+      ctx.moveTo(o.x + 6, gy); ctx.lineTo(o.x + 18, gy - o.h * 0.7); ctx.lineTo(o.x + 30, gy);
+      ctx.moveTo(o.x + o.w - 30, gy); ctx.lineTo(o.x + o.w - 18, gy - o.h * 0.7); ctx.lineTo(o.x + o.w - 6, gy); ctx.stroke();
+      ctx.fillStyle = "#f3ead9"; ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, gy - o.h * 0.78, o.w * 0.55, 7, 0, 0, Math.PI * 2); ctx.fill();
+    } else {
+      // surfboard blank standing up
+      ctx.fillStyle = "#f3ead9"; ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, gy - o.h / 2, o.w / 2, o.h / 2, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = st.accent; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(o.x + o.w / 2, gy - o.h + 6); ctx.lineTo(o.x + o.w / 2, gy - 6); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function pickup(p) {
+    const y = p.y + Math.sin(t * 4 + p.bob) * 5;
+    ctx.save(); ctx.translate(p.x, y);
+    ctx.fillStyle = "rgba(255,243,214,.18)"; ctx.beginPath(); ctx.arc(0, 0, p.r + 8, 0, Math.PI * 2); ctx.fill();
+    if (p.k === "pizza") {
+      ctx.fillStyle = "#e3ad3c"; ctx.beginPath(); ctx.moveTo(-14, -12); ctx.lineTo(14, -12); ctx.lineTo(0, 16); ctx.fill();
+      ctx.fillStyle = "#b5651d"; ctx.fillRect(-15, -15, 30, 5);
+      ctx.fillStyle = "#f0391f"; [[-5, -5], [5, -4], [0, 4]].forEach(([a, b]) => { ctx.beginPath(); ctx.arc(a, b, 3, 0, Math.PI * 2); ctx.fill(); });
+    } else if (p.k === "beer") {
+      ctx.fillStyle = "#e3ad3c"; ctx.fillRect(-10, -8, 20, 22);
+      ctx.fillStyle = "#fff8ea"; ctx.beginPath(); ctx.arc(-6, -9, 6, 0, Math.PI * 2); ctx.arc(2, -11, 7, 0, Math.PI * 2); ctx.arc(8, -8, 5, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "#e3ad3c"; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(12, 3, 6, -Math.PI / 2, Math.PI / 2); ctx.stroke();
+    } else {
+      ctx.fillStyle = "#c98a3a"; ctx.beginPath(); ctx.arc(0, 0, 15, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#3a1d0b"; [[-6, -5], [5, -6], [-2, 5], [7, 4], [-8, 4]].forEach(([a, b]) => ctx.fillRect(a - 2, b - 2, 4, 4));
+    }
+    ctx.restore();
+  }
+
+  function rider() {
+    const st = S(), x = PX(), y = player.y;
+    if (inv > 0 && Math.floor(t * 12) % 2) return;     // blink after a hit
+    ctx.save(); ctx.translate(x, y);
+    const ink = st.ride === "snowboard" ? "#1a0703" : st.ride === "board" ? "#0b0a06" : "#f3ead9";
+    ctx.fillStyle = ink; ctx.strokeStyle = ink; ctx.lineCap = "round";
+    if (st.ride !== "run") {
+      ctx.fillStyle = st.boardCol; ctx.beginPath(); ctx.ellipse(0, -3, 34, 5, st.ride === "snowboard" ? -0.06 : 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = ink; ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.moveTo(-10, -6); ctx.lineTo(-4, -26); ctx.lineTo(8, -6); ctx.stroke();       // legs, crouched
+      ctx.beginPath(); ctx.moveTo(-4, -26); ctx.lineTo(0, -46); ctx.stroke();                          // torso
+      ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(-18, -38); ctx.lineTo(0, -42); ctx.lineTo(18, -36); ctx.stroke(); // arms out
+      ctx.beginPath(); ctx.arc(2, -55, 8, 0, Math.PI * 2); ctx.fill();
+      if (st.ride === "snowboard") { ctx.fillStyle = "#e3ad3c"; ctx.fillRect(-4, -58, 13, 5); }     // goggles
+    } else {
+      const k = player.on ? Math.sin(t * 18) : 0.6;
+      ctx.fillStyle = "#e3ad3c"; ctx.save(); ctx.translate(16, -40); ctx.rotate(-0.25); ctx.beginPath(); ctx.ellipse(0, 0, 8, 28, 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      ctx.fillStyle = ink; ctx.lineWidth = 6;
+      ctx.beginPath(); ctx.moveTo(0, -30); ctx.lineTo(-10 * k, 0); ctx.moveTo(0, -30); ctx.lineTo(10 * k, 0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -30); ctx.lineTo(2, -52); ctx.stroke();
+      ctx.beginPath(); ctx.arc(4, -61, 8, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function hud() {
+    const st = S();
+    ctx.save();
+    ctx.fillStyle = "rgba(14,12,11,.55)"; ctx.fillRect(0, 0, W, 46);
+    ctx.fillStyle = st.accent; ctx.font = "500 15px 'IBM Plex Mono', monospace"; ctx.textBaseline = "middle";
+    ctx.fillText(`${stageIdx + 1}/3 · ${st.name.toUpperCase()}`, 16, 23);
+    ctx.textAlign = "right"; ctx.fillStyle = "#f3ead9"; ctx.font = "800 22px 'Archivo', sans-serif";
+    ctx.fillText(Math.round(score), W - 16, 24);
+    ctx.fillStyle = "#f0391f";
+    for (let i = 0; i < 3; i++) { ctx.globalAlpha = i < lives ? 1 : 0.2; ctx.beginPath(); ctx.arc(W - 120 + i * 18, 24, 6, 0, Math.PI * 2); ctx.fill(); }
+    ctx.globalAlpha = 1;
+    // stage progress bar
+    ctx.fillStyle = "rgba(243,234,217,.15)"; ctx.fillRect(0, 44, W, 3);
+    ctx.fillStyle = st.accent; ctx.fillRect(0, 44, W * Math.min(1, stageT / STAGE_TIME), 3);
+    ctx.restore();
+  }
+
+  function titleCard() {
+    if (card <= 0) return;
+    const st = S(), a = Math.min(1, card / 0.4);
+    ctx.save(); ctx.globalAlpha = a;
+    ctx.fillStyle = "rgba(14,12,11,.6)"; ctx.fillRect(0, H * 0.32, W, H * 0.3);
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = st.accent; ctx.font = "500 14px 'IBM Plex Mono', monospace"; ctx.fillText(`PELÍCULA ${stageIdx + 1} DE 3`, W / 2, H * 0.38);
+    ctx.fillStyle = "#f3ead9"; ctx.font = `900 ${Math.min(64, W * 0.11)}px 'Archivo', sans-serif`; ctx.fillText(st.name.toUpperCase(), W / 2, H * 0.47);
+    ctx.fillStyle = "#a39686"; ctx.font = `${Math.min(16, W * 0.03)}px 'Archivo', sans-serif`; ctx.fillText(st.sub, W / 2, H * 0.56);
+    ctx.restore();
+  }
+
+  function draw() {
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    bg();
+    if (S().ride !== "board") { ctx.fillStyle = S().ride === "snowboard" ? "rgba(255,244,236,.85)" : "rgba(243,234,217,.25)"; for (const f of flakes) ctx.fillRect(f.x % (W + 40), f.y, f.s, f.s); }
+    for (const p of pickups) pickup(p);
+    for (const o of obstacles) obstacle(o);
+    if (player) rider();
+    ctx.save(); ctx.globalAlpha = 0.07; ctx.fillStyle = dotPattern; ctx.fillRect(0, 0, W, H); ctx.restore();   // halftone
+    if (state === "play") { hud(); titleCard(); }
+  }
+
+  function loop(now) {
+    const dt = Math.min(0.033, (now - last) / 1000 || 0); last = now;
+    if (state === "play" && !document.hidden) update(dt);
+    else t += dt * 0.4;                                  // idle drift behind the menus
+    draw();
+    requestAnimationFrame(loop);
+  }
+  // attract-mode background behind the start screen
+  startStage(); speed = 260;
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(loop));
+})();
+</script>
+</body>
+</html>
