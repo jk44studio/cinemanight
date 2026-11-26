@@ -170,11 +170,11 @@ ${row("En la puerta", "Solo tu nombre" + (kind === "ticket" ? " (la entrada va a
   return { subject, html, text };
 }
 
-async function reminders(token: string, kind: string) {
+async function reminders(token: string, kind: string, max: number) {
   const { data: cfg } = await db.from("app_config").select("value").eq("key", "backfill_token").maybeSingle();
   if (!cfg?.value || cfg.value !== token) return new Response("forbidden", { status: 403 });
   if (!["test", "ticket", "guest"].includes(kind)) return new Response("bad kind", { status: 400 });
-  const { data: pending } = await db.from("attendance").select("*").eq("kind", kind).is("reminder_sent_at", null).limit(90);
+  const { data: pending } = await db.from("attendance").select("*").eq("kind", kind).is("reminder_sent_at", null).order("ref_id").limit(Math.max(1, Math.min(95, max || 1)));
   const results: string[] = [];
   for (const a of pending || []) {
     try {
@@ -183,6 +183,7 @@ async function reminders(token: string, kind: string) {
       await db.from("attendance").update({ reminder_sent_at: new Date().toISOString() }).eq("token", a.token);
       results.push(`sent ${a.ref_id}`);
     } catch (e) { results.push(`failed ${a.ref_id}: ${e}`); }
+    await new Promise((r) => setTimeout(r, 600));   // stay under Resend's 2 requests/second
   }
   return new Response(JSON.stringify(results), { headers: { "Content-Type": "application/json" } });
 }
@@ -194,7 +195,7 @@ Deno.serve(async (req) => {
   const vn = req.headers.get("x-venue-notice");
   if (vn) return venueNotice(vn);
   const rm = req.headers.get("x-reminder");
-  if (rm) return reminders(rm, String((await req.json().catch(() => ({})))?.kind || ""));
+  if (rm) { const b = await req.json().catch(() => ({})); return reminders(rm, String(b?.kind || ""), Number(b?.max) || 1); }
   const raw = await req.text();
   if (!(await verify(raw, req.headers.get("stripe-signature"), Deno.env.get("STRIPE_WEBHOOK_SECRET") || ""))) {
     return new Response("bad signature", { status: 400 });
