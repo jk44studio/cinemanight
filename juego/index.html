@@ -53,6 +53,10 @@ canvas { display: block; width: 100%; height: 100%; }
 .btn:focus-visible { outline: 2px solid var(--mustard); outline-offset: 3px; }
 .row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
 .score { font-family: var(--display); font-stretch: 125%; font-weight: 900; font-size: clamp(40px, 8vw, 64px); line-height: 1; color: var(--mustard); }
+.overlay.soft { background: linear-gradient(to bottom, rgba(14,12,11,0) 38%, rgba(14,12,11,.9) 66%, rgba(14,12,11,.97)); place-items: end center; padding-bottom: 18px; }
+.overlay.soft .in { gap: 8px; }
+.overlay.soft .score { font-size: clamp(30px, 6vw, 46px); }
+.overlay.soft .hide-soft { display: none; }
 .loot { font-family: var(--mono); font-size: 13px; letter-spacing: .08em; color: var(--muted); }
 .help { display: flex; flex-wrap: wrap; gap: 6px 20px; justify-content: space-between; color: var(--muted); font-size: 14px; }
 .help b { color: var(--cream); font-weight: 600; }
@@ -77,7 +81,7 @@ footer a { color: var(--mustard); }
           <p class="small">La trilogía · 3 niveles</p>
           <h2>¿Llegas al estreno?</h2>
           <div class="trio"><span style="color:#e6c25a">1 · Glacier Surfing</span><span style="color:#ff7a45">2 · BEDI</span><span style="color:#ff5a3c">3 · Monozukuri</span></div>
-          <p>Salta los obstáculos y recoge pizza, cerveza y cookies. Tienes 3 vidas.</p>
+          <p>Salta los obstáculos y recoge pizza, cerveza y cookies: cada una suma un amigo a tu crew. Llegad juntos a Sala Equis. Tienes 3 vidas.</p>
           <button class="btn" id="play" type="button">Jugar</button>
           <p class="small">Toca la pantalla o pulsa espacio · mantén para saltar más alto</p>
         </div>
@@ -89,12 +93,12 @@ footer a { color: var(--mustard); }
           <h2 id="end-title">Casi lo tienes</h2>
           <div class="score" id="end-score">0</div>
           <p class="loot" id="end-loot"></p>
-          <p class="small" id="end-best"></p>
+          <p class="small hide-soft" id="end-best"></p>
           <div class="row">
             <button class="btn ghost" id="again" type="button">Otra vez</button>
             <a class="btn" href="../tickets/">Consigue tu entrada</a>
           </div>
-          <p class="small">Jueves 3 dic · 19:00 · Sala Equis, Madrid</p>
+          <p class="small hide-soft">Jueves 3 dic · 19:00 · Sala Equis, Madrid</p>
         </div>
       </div>
     </div>
@@ -124,7 +128,7 @@ footer a { color: var(--mustard); }
     canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
     scale = canvas.height / H; W = canvas.width / scale;
   }
-  window.addEventListener("resize", resize); resize();
+  window.addEventListener("resize", () => { resize(); crowd = null; }); resize();
 
   // ---- the three films ----
   const STAGES = [
@@ -134,7 +138,7 @@ footer a { color: var(--mustard); }
   ];
   const STAGE_TIME = 22;                  // seconds per film
   const GROUND = () => H - 92;
-  const GRAV = 2700, JUMP = -980, PX = () => Math.max(90, W * 0.16);
+  const GRAV = 2700, JUMP = -980, PX = () => Math.max(90, W * 0.16) + pxOff;   // the rider moves forward as the crew grows
 
   // halftone dots for the poster look
   const dots = document.createElement("canvas"); dots.width = dots.height = 8;
@@ -144,10 +148,14 @@ footer a { color: var(--mustard); }
   let state = "start", stageIdx = 0, stageT = 0, t = 0, speed = 0, score = 0, lives = 3, inv = 0, card = 0;
   let loot = { pizza: 0, beer: 0, cookie: 0 };
   let player, obstacles, pickups, flakes, spawnO, spawnP, holding = false, last = 0;
+  let crew = [], hist = [], pops = [], pxOff = 0, ft = 0, crowd = null, endShown = false;
+  const RED = "#f0391f", TAU = Math.PI * 2;
   const best = () => { try { return +localStorage.getItem("cn-arcade-best") || 0; } catch { return 0; } };
 
   function reset() {
     stageIdx = 0; t = 0; score = 0; lives = 3; inv = 0; loot = { pizza: 0, beer: 0, cookie: 0 };
+    crew = []; hist = []; pops = []; pxOff = 0; ft = 0; crowd = null; endShown = false;
+    document.getElementById("end").classList.remove("soft");
     startStage();
   }
   function startStage() {
@@ -159,6 +167,7 @@ footer a { color: var(--mustard); }
 
   // ---- input: tap / click / space; hold for a higher jump ----
   function press() {
+    if (state === "finale") { if (ft < 4.2) ft = 4.2; return; }
     if (state !== "play") return;
     holding = true;
     if (player.on) { player.vy = JUMP; player.on = false; }
@@ -173,15 +182,30 @@ footer a { color: var(--mustard); }
   document.getElementById("again").onclick = () => { document.getElementById("end").hidden = true; reset(); state = "play"; };
 
   function finish(won) {
-    state = "end";
+    if (!won) state = "end";
     const total = Math.round(score);
     let b = best(); if (total > b) { b = total; try { localStorage.setItem("cn-arcade-best", b); } catch {} }
     document.getElementById("end-kicker").textContent = won ? "Trilogía completada" : `Fin de la función · nivel ${stageIdx + 1}/3`;
-    document.getElementById("end-title").textContent = won ? "¡Te vemos en el estreno!" : ["El glaciar ganó esta vez", "La montaña de BEDI te tumbó", "Casi terminas la pieza"][stageIdx];
+    const n = crew.length;
+    document.getElementById("end-title").textContent = won
+      ? (n ? `¡Llegaste con ${n} amigo${n === 1 ? "" : "s"}!` : "¡Te vemos en el estreno!")
+      : ["El glaciar ganó esta vez", "La montaña de BEDI te tumbó", "Casi terminas la pieza"][stageIdx];
     document.getElementById("end-score").textContent = total;
-    document.getElementById("end-loot").textContent = `🍕 ${loot.pizza}  ·  🍺 ${loot.beer}  ·  🍪 ${loot.cookie}`;
+    document.getElementById("end-loot").textContent = `🍕 ${loot.pizza}  ·  🍺 ${loot.beer}  ·  🍪 ${loot.cookie}  ·  crew ${n}`;
+    document.getElementById("end").classList.toggle("soft", won);
     document.getElementById("end-best").textContent = `Tu récord: ${b}`;
     document.getElementById("end").hidden = false;
+  }
+
+  // ---- the crew: every pizza, beer or cookie brings a friend; all their add-ons are cinema red ----
+  const HAIRS = ["mohawk", "afro", "ponytail", "long", "bun", "spiky", "curly", "beanie", "cap", "quiff", "pigtails", "buzz", "mullet", "topknot"];
+  const SHADES = ["round", "aviator", "wayfarer", "visor", "cateye", "star", "heart", "round", "aviator", null];
+  const GEAR = ["surf", "snow", "bike", "golf", null];
+  const pick = (arr, not) => { let v; do v = arr[Math.floor(Math.random() * arr.length)]; while (arr.length > 1 && v === not); return v; };
+  function addFriend(x, y) {
+    const prev = crew[crew.length - 1] || {};
+    crew.push({ hair: pick(HAIRS, prev.hair), shades: pick(SHADES, prev.shades), gear: pick(GEAR, prev.gear), ph: Math.random() * TAU });
+    pops.push({ x, y, life: 1 });
   }
 
   // ---- obstacles per film ----
@@ -207,6 +231,10 @@ footer a { color: var(--mustard); }
     player.vy += GRAV * dt * (holding && player.vy < 0 ? 0.62 : 1);
     player.y += player.vy * dt;
     if (player.y >= GROUND()) { player.y = GROUND(); player.vy = 0; player.on = true; }
+    hist.push(player.y); if (hist.length > 600) hist.splice(0, hist.length - 600);   // friends copy your jumps a moment later
+    pxOff += (Math.min(crew.length, 12) * (W < 600 ? 7 : 12) - pxOff) * Math.min(1, dt * 3);
+    for (const p of pops) { p.life -= dt * 0.9; p.y -= 40 * dt; }
+    pops = pops.filter((p) => p.life > 0);
     // spawns
     spawnO -= dt; spawnP -= dt;
     if (spawnO <= 0 && stageT < STAGE_TIME - 1.5) { spawnObstacle(); spawnO = (0.75 + Math.random() * 0.9) * (420 / speed) + 0.35; }
@@ -227,12 +255,12 @@ footer a { color: var(--mustard); }
     }
     for (const p of pickups) {
       const dx = p.x - px, dy = p.y - (top + ph / 2);
-      if (dx * dx + dy * dy < (p.r + 26) ** 2) { p.taken = true; loot[p.k]++; score += 50; }
+      if (dx * dx + dy * dy < (p.r + 26) ** 2) { p.taken = true; loot[p.k]++; score += 50; addFriend(p.x, p.y); }
     }
     for (const f of flakes) { f.y += f.v * dt; f.x -= (speed * 0.25 + 20) * dt; if (f.y > H) f.y = -5; if (f.x < 0) f.x += W + 40; }
     if (stageT >= STAGE_TIME) {
       score += 250;
-      if (stageIdx === 2) return finish(true);
+      if (stageIdx === 2) { state = "finale"; ft = 0; crowd = null; return; }
       stageIdx++; startStage();
     }
   }
@@ -345,6 +373,278 @@ footer a { color: var(--mustard); }
     ctx.restore();
   }
 
+  // a friend in profile, facing right; hair, sunglasses and gear are always cinema red
+  function person(x, y, f, ink, ph) {
+    ctx.save(); ctx.translate(x, y); ctx.lineCap = "round"; ctx.lineJoin = "round";
+    ctx.strokeStyle = ink; ctx.fillStyle = ink;
+    const k = Math.sin(ph); let hx, hy;
+    if (f.gear === "surf" || f.gear === "snow") {
+      ctx.fillStyle = RED; ctx.beginPath(); ctx.ellipse(0, -3, f.gear === "surf" ? 31 : 24, 4.5, 0, 0, TAU); ctx.fill();
+      if (f.gear === "surf") { ctx.beginPath(); ctx.moveTo(-22, -1); ctx.lineTo(-16, 8); ctx.lineTo(-13, -1); ctx.fill(); }
+      else { ctx.fillStyle = ink; ctx.fillRect(-11, -8, 6, 4); ctx.fillRect(5, -8, 6, 4); }
+      ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(-9, -6); ctx.lineTo(-3, -24); ctx.lineTo(7, -6); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-3, -24); ctx.lineTo(0, -42); ctx.stroke();
+      ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(-15, -34 + k * 2); ctx.lineTo(0, -38); ctx.lineTo(15, -32 - k * 2); ctx.stroke();
+      hx = 2; hy = -50;
+    } else if (f.gear === "bike") {
+      ctx.strokeStyle = RED; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(-15, -10, 10, 0, TAU); ctx.moveTo(26, -10); ctx.arc(16, -10, 10, 0, TAU); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(-15, -10); ctx.lineTo(-2, -10); ctx.lineTo(12, -26); ctx.lineTo(16, -10);
+      ctx.moveTo(-2, -10); ctx.lineTo(-7, -27); ctx.lineTo(12, -26); ctx.moveTo(12, -26); ctx.lineTo(14, -33); ctx.lineTo(18, -33);
+      ctx.moveTo(-11, -28); ctx.lineTo(-3, -28); ctx.stroke();
+      const a = ph * 1.6, p1 = [-2 + 6 * Math.cos(a), -10 + 6 * Math.sin(a)], p2 = [-2 - 6 * Math.cos(a), -10 - 6 * Math.sin(a)];
+      ctx.strokeStyle = ink; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(-6, -31); ctx.lineTo(3, -22 + (p1[1] + 10) * 0.4); ctx.lineTo(p1[0], p1[1]); ctx.stroke();
+      ctx.globalAlpha = 0.75; ctx.beginPath(); ctx.moveTo(-6, -31); ctx.lineTo(3, -22 + (p2[1] + 10) * 0.4); ctx.lineTo(p2[0], p2[1]); ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.moveTo(-6, -31); ctx.lineTo(5, -46); ctx.stroke();
+      ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(4, -44); ctx.lineTo(16, -34); ctx.stroke();
+      hx = 8; hy = -54;
+    } else {
+      if (f.gear === "golf") {
+        ctx.save(); ctx.translate(-8, -36); ctx.rotate(-0.35);
+        ctx.strokeStyle = RED; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(-3, -12); ctx.lineTo(-5, -25); ctx.moveTo(0, -12); ctx.lineTo(1, -28); ctx.moveTo(3, -12); ctx.lineTo(6, -23); ctx.stroke();
+        ctx.fillStyle = RED; ctx.fillRect(-8, -27, 5, 3); ctx.fillRect(0, -30, 5, 3); ctx.fillRect(5, -25, 5, 3);
+        ctx.fillRect(-6, -13, 12, 27); ctx.restore();
+      }
+      ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(0, -28); ctx.lineTo(-9 * k, 0); ctx.moveTo(0, -28); ctx.lineTo(9 * k, 0); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, -28); ctx.lineTo(1, -46); ctx.stroke();
+      ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(1, -42); ctx.lineTo(-7 * k, -28); ctx.moveTo(1, -42); ctx.lineTo(7 * k, -28); ctx.stroke();
+      hx = 3; hy = -55;
+    }
+    if (f.hair === "afro") { ctx.fillStyle = RED; ctx.beginPath(); ctx.arc(hx - 2, hy - 3, 12.5, 0, TAU); ctx.fill(); }
+    if (f.hair === "long" || f.hair === "mullet") { ctx.fillStyle = RED; ctx.fillRect(hx - 9.5, hy - 3, 7, f.hair === "long" ? 17 : 12); }
+    ctx.fillStyle = ink; ctx.beginPath(); ctx.arc(hx, hy, 8, 0, TAU); ctx.fill();
+    hair(f.hair, hx, hy); shades(f.shades, hx, hy);
+    ctx.restore();
+  }
+  function capTop(x, y) { ctx.beginPath(); ctx.arc(x, y, 8.8, Math.PI * 1.02, Math.PI * 2.02); ctx.fill(); }
+  function hair(h, x, y) {
+    if (!h) return;
+    ctx.fillStyle = RED; ctx.strokeStyle = RED;
+    switch (h) {
+      case "mohawk": ctx.beginPath(); ctx.moveTo(x - 7, y - 4); ctx.lineTo(x - 5, y - 15); ctx.lineTo(x - 2, y - 8); ctx.lineTo(x, y - 18); ctx.lineTo(x + 2, y - 8); ctx.lineTo(x + 5, y - 14); ctx.lineTo(x + 5, y - 6); ctx.fill(); break;
+      case "ponytail": capTop(x, y); ctx.beginPath(); ctx.ellipse(x - 11, y + 1, 3.5, 9, 0.5, 0, TAU); ctx.fill(); break;
+      case "long": case "mullet": capTop(x, y); break;
+      case "bun": capTop(x, y); ctx.beginPath(); ctx.arc(x - 3, y - 11, 4.5, 0, TAU); ctx.fill(); break;
+      case "topknot": capTop(x, y); ctx.beginPath(); ctx.arc(x, y - 12, 3.5, 0, TAU); ctx.fill(); ctx.fillRect(x - 1.5, y - 10, 3, 3); break;
+      case "spiky": ctx.beginPath(); ctx.moveTo(x - 9, y - 1); for (let i = 0; i < 5; i++) { ctx.lineTo(x - 8 + i * 4, y - 14 + (i % 2) * 2); ctx.lineTo(x - 6 + i * 4, y - 6); } ctx.lineTo(x + 9, y - 2); ctx.fill(); break;
+      case "curly": for (let i = 0; i < 7; i++) { const a = Math.PI * (1 + i / 6); ctx.beginPath(); ctx.arc(x + Math.cos(a) * 8, y + Math.sin(a) * 8, 3.6, 0, TAU); ctx.fill(); } break;
+      case "beanie": ctx.beginPath(); ctx.arc(x, y - 1, 9.2, Math.PI, 0); ctx.fill(); ctx.fillRect(x - 9.8, y - 3, 19.6, 3.5); ctx.beginPath(); ctx.arc(x, y - 12, 3, 0, TAU); ctx.fill(); break;
+      case "cap": capTop(x, y); ctx.fillRect(x + 3, y - 6, 10, 2.6); break;
+      case "quiff": capTop(x, y); ctx.beginPath(); ctx.ellipse(x + 4, y - 10, 7, 4, -0.35, 0, TAU); ctx.fill(); break;
+      case "pigtails": capTop(x, y); ctx.beginPath(); ctx.arc(x - 10, y + 1, 3.5, 0, TAU); ctx.arc(x - 8, y + 7, 3, 0, TAU); ctx.fill(); break;
+      case "buzz": ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, y, 7.6, Math.PI * 1.08, Math.PI * 1.95); ctx.stroke(); break;
+    }
+  }
+  function shades(s, x, y) {
+    if (!s) return;
+    ctx.fillStyle = RED; ctx.strokeStyle = RED; ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.moveTo(x + 2, y - 1.5); ctx.lineTo(x - 7, y - 2.5); ctx.stroke();   // arm over the ear
+    ctx.beginPath();
+    switch (s) {
+      case "round": ctx.arc(x + 5, y - 1, 3.4, 0, TAU); break;
+      case "aviator": ctx.ellipse(x + 5, y - 0.3, 3.8, 3, 0.35, 0, TAU); break;
+      case "wayfarer": ctx.moveTo(x + 1, y - 4.5); ctx.lineTo(x + 10, y - 4.5); ctx.lineTo(x + 9, y + 1); ctx.lineTo(x + 2.5, y + 1); break;
+      case "visor": ctx.rect(x - 1, y - 4.5, 12, 4.5); break;
+      case "cateye": ctx.moveTo(x + 1, y - 2); ctx.lineTo(x + 10, y - 6); ctx.lineTo(x + 9, y + 1); ctx.lineTo(x + 3, y + 1); break;
+      case "star": for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? 2 : 4.6; ctx.lineTo(x + 5 + Math.cos(a) * r, y - 1 + Math.sin(a) * r); } break;
+      case "heart": ctx.moveTo(x + 5, y + 2.5); ctx.bezierCurveTo(x - 1, y - 2, x + 2, y - 6.5, x + 5, y - 3); ctx.bezierCurveTo(x + 8, y - 6.5, x + 11, y - 2, x + 5, y + 2.5); break;
+    }
+    ctx.closePath(); ctx.fill();
+  }
+
+  function crewRun() {
+    if (!crew.length) return;
+    const st = S(), ink = st.ride === "snowboard" ? "#1a0703" : st.ride === "board" ? "#0b0a06" : "#f3ead9";
+    const n = Math.min(crew.length, 24), x0 = PX(), gap = Math.max(17, Math.min(40, (x0 - 16) / n));
+    for (let i = n - 1; i >= 0; i--) {
+      const y = hist[hist.length - 1 - (i + 1) * 5] ?? GROUND(), on = y >= GROUND() - 0.5;
+      person(x0 - 26 - gap * i, y, crew[i], ink, on ? t * 14 + crew[i].ph : 0.7);
+    }
+  }
+  function popTexts() {
+    ctx.save(); ctx.textAlign = "center"; ctx.font = "800 15px 'Archivo', sans-serif";
+    for (const p of pops) { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = RED; ctx.fillText("+1 AMIGO", p.x, p.y - 20); }
+    ctx.restore();
+  }
+
+  // ---- finale: the crew reaches Sala Equis, then the projector rolls ----
+  function arrival(p) {
+    const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#0b0908"); g.addColorStop(1, "#2a0c07");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "rgba(243,234,217,.6)"; for (let i = 0; i < 40; i++) ctx.fillRect((i * 97.3) % W, (i * 53.7) % (H * 0.3), 1.5, 1.5);
+    const gy = GROUND(), fx = W * 0.36, fw = W - fx + 10, doorX = fx + fw * 0.42, dw = Math.min(70, fw * 0.24);
+    ctx.fillStyle = "#1a1411"; ctx.fillRect(fx, H * 0.1, fw, gy - H * 0.1);
+    ctx.fillStyle = "rgba(255,190,120,.18)"; for (let r = 0; r < 2; r++) for (let c = 0; c < 4; c++) ctx.fillRect(fx + 16 + c * (fw / 4), H * 0.14 + r * 34, fw / 4 - 30, 20);
+    // marquee
+    const my = H * 0.3, mh = Math.min(84, H * 0.15);
+    ctx.fillStyle = "#0e0c0b"; ctx.fillRect(fx - 12, my, fw + 4, mh);
+    for (let x = fx - 6; x < W; x += 16) { const on = (Math.floor(ft * 8 + x / 16) % 3) !== 0; ctx.fillStyle = on ? "#ffe2a0" : "#6b4a20"; ctx.beginPath(); ctx.arc(x, my + 5, 3, 0, TAU); ctx.arc(x, my + mh - 5, 3, 0, TAU); ctx.fill(); }
+    ctx.save(); ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.font = `900 ${Math.min(46, fw * 0.12)}px 'Archivo', sans-serif`; ctx.fillStyle = RED; ctx.shadowColor = RED; ctx.shadowBlur = 18;
+    ctx.fillText("SALA EQUIS", fx + fw / 2 - 6, my + mh * 0.44);
+    ctx.shadowBlur = 0; ctx.fillStyle = "#e3ad3c"; ctx.font = `500 ${Math.min(13, fw * 0.035)}px 'IBM Plex Mono', monospace`;
+    ctx.fillText("JK44 CINEMA NIGHT · HOY 19:00", fx + fw / 2 - 6, my + mh * 0.78); ctx.restore();
+    // open door with warm light
+    ctx.fillStyle = "#ffcf8a"; ctx.fillRect(doorX, gy - 104, dw, 104);
+    const spill = ctx.createRadialGradient(doorX + dw / 2, gy, 4, doorX + dw / 2, gy, 160); spill.addColorStop(0, "rgba(255,207,138,.45)"); spill.addColorStop(1, "rgba(255,207,138,0)");
+    ctx.fillStyle = spill; ctx.fillRect(doorX - 160, gy - 160, dw + 320, 260);
+    ctx.fillStyle = "#14100e"; ctx.fillRect(0, gy, W, H - gy);
+    ctx.strokeStyle = "rgba(243,234,217,.08)"; ctx.lineWidth = 1; for (let x = (-ft * 0) % 40; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, gy); ctx.lineTo(x - 30, H); ctx.stroke(); }
+    // the crew walks in, leader first
+    const e = 1 - (1 - Math.min(1, p)) ** 2, lead = -30 + (doorX + dw / 2 + 30) * e * 1.25, gap = 30;
+    const all = [{ hair: null, shades: null, gear: null, ph: 0 }, ...crew];
+    for (let i = all.length - 1; i >= 0; i--) {
+      const x = lead - i * gap; if (x < -60) continue;
+      const inside = x - (doorX + dw / 2);
+      ctx.save(); ctx.globalAlpha = inside > 0 ? Math.max(0, 1 - inside / 30) : 1;
+      person(x, gy, all[i], i ? "#f3ead9" : "#e3ad3c", ft * 12 + all[i].ph);
+      ctx.restore();
+    }
+  }
+
+  function buildCrowd() {
+    const sw = W * 0.8, sh = Math.min(sw * 0.42, H * 0.34), sx = (W - sw) / 2, sy = H * 0.06;
+    let rowsN = 9, rows;
+    const make = () => {
+      rows = []; let total = 0;
+      for (let r = 0; r < rowsN; r++) {
+        const f = r / (rowsN - 1), y = sy + sh + 46 + (H + 6 - (sy + sh + 46)) * f ** 1.15, rad = 4 + 13 * f, sp = rad * 2.6;
+        const seats = []; for (let x = (r % 2) * sp / 2 - sp / 2; x < W + sp; x += sp) seats.push({ x: x + (Math.random() - 0.5) * rad * 0.5, shade: ["#1b1512", "#211915", "#16110f", "#2a201a"][Math.floor(Math.random() * 4)], ph: Math.random() * TAU, hairDark: Math.random() < 0.5 ? Math.floor(Math.random() * 4) : -1 });
+        rows.push({ y, rad, seats }); total += seats.length;
+      }
+      return total;
+    };
+    while (make() < 210) rowsN++;
+    // seat the crew together near the front, leader in the middle
+    const all = [{ hair: null, gear: null, leader: true }, ...crew], row = rows[rowsN - 3], row2 = rows[rowsN - 4];
+    let mid = Math.floor(row.seats.length / 2), k = 0;
+    for (let i = 0; i < all.length; i++) {
+      const target = i < row.seats.length - 2 ? row : row2; const m = Math.floor(target.seats.length / 2);
+      const off = i < row.seats.length - 2 ? i : i - (row.seats.length - 2), idx = m + (off % 2 ? -Math.ceil(off / 2) : off / 2);
+      if (target.seats[idx]) target.seats[idx].f = all[i];
+    }
+    const people = rows.reduce((n, r) => n + r.seats.length, 0);
+    crowd = { sx, sy, sw, sh, rows, people }; document.documentElement.dataset.audience = people;
+  }
+
+  function backHead(x, y, r, s, lit) {
+    ctx.fillStyle = s.shade; ctx.beginPath(); ctx.ellipse(x, y, r * 1.75, r * 1.15, 0, Math.PI, 0); ctx.fill(); ctx.fillRect(x - r * 1.75, y - 0.5, r * 3.5, r * 1.2);
+    const hy = y - r * 1.35 + Math.sin(ft * 1.3 + s.ph) * r * 0.05, f = s.f;
+    if (f && f.gear && f.gear !== "bike") {      // gear propped next to the seat
+      ctx.fillStyle = RED;
+      if (f.gear === "golf") { ctx.fillRect(x + r * 1.2, hy - r * 0.2, r * 0.7, r * 1.8); ctx.fillRect(x + r * 1.1, hy - r * 0.6, r * 0.25, r * 0.5); ctx.fillRect(x + r * 1.6, hy - r * 0.8, r * 0.25, r * 0.6); }
+      else { ctx.beginPath(); ctx.ellipse(x + r * 1.6, hy + r * 0.2, r * 0.45, r * 1.9, 0.1, 0, TAU); ctx.fill(); }
+    }
+    if (f && f.hair === "afro") { ctx.fillStyle = RED; ctx.beginPath(); ctx.arc(x, hy - r * 0.2, r * 1.45, 0, TAU); ctx.fill(); }
+    if (!(f && f.hair === "afro")) { ctx.fillStyle = s.shade; ctx.beginPath(); ctx.arc(x, hy, r, 0, TAU); ctx.fill(); }   // an afro covers the whole back of the head
+    if (f) {
+      ctx.fillStyle = f.leader ? "#e3ad3c" : RED;
+      const h = f.leader ? "cap" : f.hair;
+      if (h && h !== "afro") {
+        if (h === "buzz") { ctx.globalAlpha = 0.8; }
+        ctx.beginPath(); ctx.arc(x, hy, r * 1.06, Math.PI, 0); ctx.fill(); ctx.globalAlpha = 1;
+        if (h === "long" || h === "mullet") ctx.fillRect(x - r, hy, r * 2, r * (h === "long" ? 1.5 : 1));
+        if (h === "ponytail") { ctx.beginPath(); ctx.ellipse(x, hy + r * 1.1, r * 0.35, r * 0.9, 0, 0, TAU); ctx.fill(); }
+        if (h === "pigtails") { ctx.beginPath(); ctx.arc(x - r * 1.1, hy + r * 0.3, r * 0.45, 0, TAU); ctx.arc(x + r * 1.1, hy + r * 0.3, r * 0.45, 0, TAU); ctx.fill(); }
+        if (h === "bun" || h === "topknot" || h === "beanie") { ctx.beginPath(); ctx.arc(x, hy - r * 1.05, r * 0.45, 0, TAU); ctx.fill(); }
+        if (h === "mohawk" || h === "spiky") { ctx.beginPath(); ctx.moveTo(x - r * 0.35, hy - r * 0.8); ctx.lineTo(x, hy - r * 1.7); ctx.lineTo(x + r * 0.35, hy - r * 0.8); ctx.fill(); }
+        if (h === "curly") for (let i = 0; i < 5; i++) { const a = Math.PI * (1 + i / 4); ctx.beginPath(); ctx.arc(x + Math.cos(a) * r, hy + Math.sin(a) * r, r * 0.4, 0, TAU); ctx.fill(); }
+        if (h === "quiff") { ctx.beginPath(); ctx.ellipse(x, hy - r, r * 0.8, r * 0.4, 0, 0, TAU); ctx.fill(); }
+      }
+      if (f.shades) { ctx.strokeStyle = RED; ctx.lineWidth = Math.max(1, r * 0.18); ctx.beginPath(); ctx.moveTo(x - r * 1.02, hy + r * 0.1); ctx.lineTo(x - r * 0.6, hy + r * 0.15); ctx.moveTo(x + r * 1.02, hy + r * 0.1); ctx.lineTo(x + r * 0.6, hy + r * 0.15); ctx.stroke(); }
+    } else if (s.hairDark >= 0) {
+      ctx.fillStyle = "#0d0a09"; ctx.beginPath(); ctx.arc(x, hy - r * 0.15, r * 1.02, Math.PI, 0); ctx.fill();
+      if (s.hairDark === 1) ctx.fillRect(x - r, hy - r * 0.2, r * 2, r * 1.3);
+      if (s.hairDark === 2) { ctx.beginPath(); ctx.arc(x, hy - r * 1.05, r * 0.4, 0, TAU); ctx.fill(); }
+    }
+    if (lit > 0) { ctx.strokeStyle = `rgba(255,226,180,${0.5 * lit})`; ctx.lineWidth = Math.max(1, r * 0.16); ctx.beginPath(); ctx.arc(x, hy, r, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke(); }
+  }
+
+  function screenContent(c, on) {
+    const { sx, sy, sw, sh } = c, cx = sx + sw / 2, cy = sy + sh / 2;
+    ctx.save(); ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip();
+    ctx.fillStyle = "#120e0c"; ctx.fillRect(sx, sy, sw, sh);
+    if (on > 0) {
+      ctx.globalAlpha = on; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      const u = ft - 5.4;
+      if (u < 0) { ctx.fillStyle = "#efe3c8"; ctx.fillRect(sx, sy, sw, sh); }
+      else if (u < 1.8) {                     // academy leader 3 · 2 · 1
+        const n = 3 - Math.floor(u / 0.6), a = ((u % 0.6) / 0.6) * TAU, r = sh * 0.38;
+        ctx.fillStyle = "#b9ae9a"; ctx.fillRect(sx, sy, sw, sh);
+        ctx.fillStyle = "#8f8574"; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, sw, -Math.PI / 2, -Math.PI / 2 + a); ctx.fill();
+        ctx.strokeStyle = "#f3ead9"; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, r, 0, TAU); ctx.moveTo(cx + r * 0.8, cy); ctx.arc(cx, cy, r * 0.8, 0, TAU);
+        ctx.moveTo(sx, cy); ctx.lineTo(sx + sw, cy); ctx.moveTo(cx, sy); ctx.lineTo(cx, sy + sh); ctx.stroke();
+        ctx.fillStyle = "#1a1310"; ctx.font = `900 ${sh * 0.55}px 'Archivo', sans-serif`; ctx.fillText(n, cx, cy + sh * 0.03);
+      } else if (u < 5.1) {                   // PRESENTED BY JK44
+        const v = u - 1.8, fade = Math.min(1, v / 0.5, (3.3 - v) / 0.4);
+        ctx.globalAlpha = on * Math.max(0, fade);
+        ctx.fillStyle = "#e3ad3c"; ctx.font = `500 ${Math.max(10, sh * 0.09)}px 'IBM Plex Mono', monospace`; ctx.fillText("P R E S E N T E D   B Y", cx, cy - sh * 0.24);
+        ctx.fillStyle = RED; ctx.shadowColor = RED; ctx.shadowBlur = 24; ctx.font = `900 ${sh * 0.46}px 'Archivo', sans-serif`; ctx.fillText("JK44", cx, cy + sh * 0.08);
+        ctx.shadowBlur = 0; ctx.fillStyle = "#a39686"; ctx.font = `500 ${Math.max(9, sh * 0.065)}px 'IBM Plex Mono', monospace`; ctx.fillText("CINEMA NIGHT · MADRID", cx, cy + sh * 0.38);
+      } else {                                // the three films, on a loop
+        const v = u - 5.1, i = Math.floor(v / 3) % 3, st = STAGES[i], fade = Math.min(1, (v % 3) / 0.4, (3 - (v % 3)) / 0.3);
+        const g = ctx.createLinearGradient(0, sy, 0, sy + sh); g.addColorStop(0, st.sky[0]); g.addColorStop(1, st.sky[1]);
+        ctx.globalAlpha = on * Math.max(0, fade); ctx.fillStyle = g; ctx.fillRect(sx, sy, sw, sh);
+        ctx.fillStyle = st.ground; ctx.fillRect(sx, sy + sh * 0.8, sw, sh * 0.2);
+        ctx.fillStyle = st.ink; ctx.font = `500 ${Math.max(9, sh * 0.07)}px 'IBM Plex Mono', monospace`; ctx.fillText(`PELÍCULA ${i + 1} DE 3`, cx, cy - sh * 0.24);
+        ctx.font = `900 ${Math.min(sh * 0.24, sw * 0.11)}px 'Archivo', sans-serif`; ctx.fillText(st.name.toUpperCase(), cx, cy);
+        ctx.font = `${Math.max(9, sh * 0.065)}px 'Archivo', sans-serif`; ctx.fillText(st.sub, cx, cy + sh * 0.2);
+      }
+      // film grain, dust and the odd scratch
+      ctx.globalAlpha = 0.5 * on; ctx.fillStyle = "#000";
+      for (let i = 0; i < 26; i++) ctx.fillRect(sx + Math.random() * sw, sy + Math.random() * sh, 1 + Math.random() * 2, 1 + Math.random() * 2);
+      if (Math.random() < 0.25) { ctx.fillStyle = "rgba(243,234,217,.5)"; ctx.fillRect(sx + Math.random() * sw, sy, 1, sh); }
+      const vg = ctx.createRadialGradient(cx, cy, sh * 0.3, cx, cy, sw * 0.62); vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.55)");
+      ctx.globalAlpha = 1; ctx.fillStyle = vg; ctx.fillRect(sx, sy, sw, sh);
+    }
+    ctx.restore();
+  }
+
+  function cinema() {
+    if (!crowd) buildCrowd();
+    const c = crowd, { sx, sy, sw, sh } = c;
+    const on = ft < 4.6 ? 0 : Math.min(1, (ft - 4.6) / 0.5) * (0.9 + 0.1 * Math.random());
+    ctx.fillStyle = "#0a0807"; ctx.fillRect(0, 0, W, H);
+    // red curtains either side of the screen
+    ctx.fillStyle = "#5c0f06"; ctx.fillRect(0, 0, W, sy * 0.7);
+    for (const side of [0, 1]) for (let i = 0; i < 6; i++) {
+      const w = Math.max(sx, 18) / 6 + 4, x = side ? sx + sw + i * (w - 4) : sx - (i + 1) * (w - 4);
+      ctx.fillStyle = i % 2 ? "#7a1408" : "#9c1c10"; ctx.fillRect(x, 0, w, sy + sh + 30);
+    }
+    ctx.fillStyle = "#000"; ctx.fillRect(sx - 4, sy - 4, sw + 8, sh + 8);
+    screenContent(c, on);
+    // projector beam from the booth behind the audience
+    if (on > 0) {
+      const ox = W / 2, oy = H * 0.97;
+      ctx.save(); ctx.globalCompositeOperation = "lighter";
+      const bg = ctx.createLinearGradient(0, oy, 0, sy); bg.addColorStop(0, `rgba(255,236,200,${0.34 * on})`); bg.addColorStop(1, `rgba(255,236,200,${0.05 * on})`);
+      ctx.fillStyle = bg; ctx.beginPath(); ctx.moveTo(ox - 7, oy); ctx.lineTo(sx, sy); ctx.lineTo(sx + sw, sy); ctx.lineTo(sx + sw, sy + sh); ctx.lineTo(ox + 7, oy); ctx.fill();
+      ctx.fillStyle = `rgba(255,240,210,${0.5 * on})`;
+      for (let i = 0; i < 40; i++) {                      // dust drifting through the light
+        const k = ((i * 0.618 + ft * 0.03) % 1), lx = ((i * 0.377 + Math.sin(ft * 0.3 + i)) % 1 + 1) % 1;
+        const y = oy + (sy + sh * 0.5 - oy) * k, half = 7 + (sw / 2 - 7) * k;
+        ctx.fillRect(ox - half + lx * half * 2, y, 1.5, 1.5);
+      }
+      ctx.restore();
+    }
+    // the audience: 200+ heads facing the screen
+    for (const row of c.rows) for (const s of row.seats) if (!s.f) backHead(s.x, row.y, row.rad, s, on);
+    for (const row of c.rows) for (const s of row.seats) if (s.f) backHead(s.x, row.y, row.rad, s, on);   // your crew, on top so the red stands out
+    // booth glow at the very bottom
+    if (on > 0) { const pg = ctx.createRadialGradient(W / 2, H, 2, W / 2, H, 60); pg.addColorStop(0, `rgba(255,240,210,${0.7 * on})`); pg.addColorStop(1, "rgba(255,240,210,0)"); ctx.fillStyle = pg; ctx.fillRect(W / 2 - 60, H - 60, 120, 60); }
+    // fade in from black after the arrival
+    if (ft < 4.8) { ctx.fillStyle = `rgba(0,0,0,${Math.max(0, 1 - (ft - 4.2) / 0.6)})`; ctx.fillRect(0, 0, W, H); }
+  }
+
+  function finale() {
+    if (ft < 3.6) arrival(ft / 3.0);
+    else if (ft < 4.2) { arrival(1); ctx.fillStyle = `rgba(0,0,0,${(ft - 3.6) / 0.6})`; ctx.fillRect(0, 0, W, H); }
+    else cinema();
+  }
+
   function hud() {
     const st = S();
     ctx.save();
@@ -359,6 +659,7 @@ footer a { color: var(--mustard); }
     // stage progress bar
     ctx.fillStyle = "rgba(243,234,217,.15)"; ctx.fillRect(0, 44, W, 3);
     ctx.fillStyle = st.accent; ctx.fillRect(0, 44, W * Math.min(1, stageT / STAGE_TIME), 3);
+    if (crew.length) { ctx.textAlign = "left"; ctx.fillStyle = RED; ctx.font = "500 13px 'IBM Plex Mono', monospace"; ctx.fillText(`CREW +${crew.length}`, 16, 64); }
     ctx.restore();
   }
 
@@ -376,11 +677,14 @@ footer a { color: var(--mustard); }
 
   function draw() {
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    if (state === "finale") { finale(); ctx.save(); ctx.globalAlpha = 0.06; ctx.fillStyle = dotPattern; ctx.fillRect(0, 0, W, H); ctx.restore(); return; }
     bg();
     if (S().ride !== "board") { ctx.fillStyle = S().ride === "snowboard" ? "rgba(255,244,236,.85)" : "rgba(243,234,217,.25)"; for (const f of flakes) ctx.fillRect(f.x % (W + 40), f.y, f.s, f.s); }
     for (const p of pickups) pickup(p);
     for (const o of obstacles) obstacle(o);
+    if (player && state !== "start") crewRun();
     if (player) rider();
+    popTexts();
     ctx.save(); ctx.globalAlpha = 0.07; ctx.fillStyle = dotPattern; ctx.fillRect(0, 0, W, H); ctx.restore();   // halftone
     if (state === "play") { hud(); titleCard(); }
   }
@@ -388,12 +692,24 @@ footer a { color: var(--mustard); }
   function loop(now) {
     const dt = Math.min(0.033, (now - last) / 1000 || 0); last = now;
     if (state === "play" && !document.hidden) update(dt);
+    else if (state === "finale") { ft += dt; if (ft > 11 && !endShown) { endShown = true; finish(true); } }
     else t += dt * 0.4;                                  // idle drift behind the menus
     draw();
     requestAnimationFrame(loop);
   }
   // attract-mode background behind the start screen
   startStage(); speed = 260;
+  // #final jumps straight to the ending with a sample crew (handy for previews)
+  if (location.hash === "#final") {
+    document.getElementById("start").hidden = true; reset();
+    for (let i = 0; i < 16; i++) addFriend(0, 0);
+    pops = []; score = 4321; state = "finale";
+  }
+  if (location.hash === "#crew") {
+    document.getElementById("start").hidden = true; reset(); state = "play"; card = 0;
+    for (let i = 0; i < 10; i++) addFriend(0, 0);
+    pops = [];
+  }
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(loop));
 })();
 </script>
