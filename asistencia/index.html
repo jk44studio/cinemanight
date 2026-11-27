@@ -35,10 +35,13 @@ h1 span { color: var(--red); }
 .tabs button[aria-pressed="true"] { color: var(--cream); border-color: var(--red); background: rgba(240,57,31,.12); }
 input:focus-visible, button:focus-visible { outline: 2px solid var(--mustard); outline-offset: 2px; }
 ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
-li { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
-li .n { font-weight: 600; overflow-wrap: anywhere; }
-li .m { grid-column: 1; font: 12px "IBM Plex Mono", monospace; color: var(--muted); letter-spacing: .04em; }
-li .r { grid-row: 1 / span 2; grid-column: 2; align-self: center; font: 600 13px "Archivo", sans-serif; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+li { display: grid; grid-template-columns: 48px 1fr auto; gap: 2px 12px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+li .av { grid-row: 1 / span 2; grid-column: 1; width: 48px; height: 48px; border-radius: 50%; object-fit: cover; background: var(--panel); border: 2px solid var(--line);
+  display: grid; place-items: center; font: 800 16px "Archivo", sans-serif; color: var(--muted); }
+li.si .av { border-color: var(--green); } li.no .av { border-color: var(--red); opacity: .6; }
+li .n { grid-column: 2; font-weight: 600; overflow-wrap: anywhere; align-self: end; }
+li .m { grid-column: 2; font: 12px "IBM Plex Mono", monospace; color: var(--muted); letter-spacing: .04em; align-self: start; }
+li .r { grid-row: 1 / span 2; grid-column: 3; align-self: center; font: 600 13px "Archivo", sans-serif; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
 li.si .r { color: var(--green); } li.no .r { color: var(--red); } li.pend .r { color: var(--muted); }
 .msg { color: var(--muted); }
 .foot { font: 12px "IBM Plex Mono", monospace; color: var(--muted); }
@@ -55,7 +58,7 @@ li.si .r { color: var(--green); } li.no .r { color: var(--red); } li.pend .r { c
 
   <section id="app" hidden style="display:grid;gap:18px">
     <div class="stats">
-      <div class="stat si"><span class="k">Plazas confirmadas</span><b id="n-si">0</b></div>
+      <div class="stat si"><span class="k">Vienen</span><b id="n-si">0</b></div>
       <div class="stat no"><span class="k">No pueden</span><b id="n-no">0</b></div>
       <div class="stat pend"><span class="k">Sin responder</span><b id="n-pend">0</b></div>
       <div class="stat"><span class="k">Plazas en lista</span><b id="n-all">0</b></div>
@@ -83,7 +86,7 @@ li.si .r { color: var(--green); } li.no .r { color: var(--red); } li.pend .r { c
   const CFG = window.RSVP_CONFIG || {};
   const $ = (id) => document.getElementById(id);
   const key = new URLSearchParams(location.search).get("k") || "";
-  let rows = [], filter = "all";
+  let rows = [], filter = "all", photos = {};
   const state = (r) => r.response === "si" ? "si" : r.response === "no" ? "no" : "pend";
   const hhmm = (s) => s ? new Date(s).toLocaleString("es-ES", { weekday: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Madrid" }) : "";
 
@@ -108,9 +111,23 @@ li.si .r { color: var(--green); } li.no .r { color: var(--red); } li.pend .r { c
       m.textContent = (r.kind === "ticket" ? `Entrada · ${r.quantity} plaza${r.quantity === 1 ? "" : "s"}` : "Invitado") +
         (r.responded_at ? ` · ${hhmm(r.responded_at)}` : r.sent ? " · email enviado" : " · email pendiente");
       const st = document.createElement("span"); st.className = "r"; st.textContent = s === "si" ? "✓ Viene" : s === "no" ? "✗ No" : "—";
-      li.append(n, st, m); ul.appendChild(li);
+      let av;
+      if (r.ref && photos[r.ref]) { av = document.createElement("img"); av.src = photos[r.ref]; av.alt = ""; av.loading = "lazy"; }
+      else { av = document.createElement("span"); av.textContent = (r.name || "?").trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join("").toUpperCase(); }
+      av.className = "av";
+      li.append(av, n, st, m); ul.appendChild(li);
     }
     if (!shown.length) { const li = document.createElement("li"); li.className = "pend"; li.innerHTML = '<span class="n" style="color:var(--muted)">Nadie con este filtro</span>'; ul.appendChild(li); }
+  }
+
+  // guest photos come from the public guest list (same one the RSVP page shows); loaded once, they rarely change
+  async function loadPhotos(headers) {
+    try {
+      const r = await fetch(`${CFG.supabaseUrl.replace(/\/$/, "")}/rest/v1/rpc/guest_list`, { method: "POST", headers, body: "{}" });
+      if (!r.ok) return;
+      for (const g of (await r.json()) || []) if (typeof g.photo === "string" && g.photo.startsWith("data:image/")) photos[g.id] = g.photo;
+      render();
+    } catch {}
   }
 
   async function load() {
@@ -123,6 +140,7 @@ li.si .r { color: var(--green); } li.no .r { color: var(--red); } li.pend .r { c
       $("msg").hidden = true; $("app").hidden = false;
       $("updated").textContent = "Actualizado " + new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) + " · se refresca solo cada minuto";
       render();
+      if (!Object.keys(photos).length) loadPhotos(headers);
     } catch { $("msg").textContent = "Sin conexión. Reintentando…"; }
   }
 
