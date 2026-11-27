@@ -132,6 +132,10 @@ async function venueNotice(token: string) {
 function reminderEmail({ name, kind, quantity, token }: { name: string | null; kind: string; quantity: number | null; token: string }) {
   const first = (name || "").trim().split(/\s+/)[0] || "";
   const yes = `${SITE}/confirmar/?t=${token}&r=si`, no = `${SITE}/confirmar/?t=${token}&r=no`;
+  const ask = kind !== "ticket";   // ticket buyers get a plain reminder, guests are asked to confirm
+  const today = new Date(new Date().toLocaleString("en-US", { timeZone: "Europe/Madrid" }));
+  const days = Math.round((Date.UTC(2026, 11, 3) - Date.UTC(today.getFullYear(), today.getMonth(), today.getDate())) / 864e5);
+  const left = days > 1 ? `Faltan ${days} días` : days === 1 ? "Es mañana" : "Es hoy";
   const what = kind === "ticket" ? `tus <b>${quantity} entrada${quantity === 1 ? "" : "s"}</b>` : `tu <b>plaza en la lista de invitados</b>`;
   const row = (k: string, v: string) => `<tr><td style="padding:6px 0;color:#a39686;font:13px/1.4 Arial,sans-serif;letter-spacing:.08em;text-transform:uppercase;width:110px;vertical-align:top">${k}</td><td style="padding:6px 0;color:#f3ead9;font:16px/1.4 Arial,sans-serif">${v}</td></tr>`;
   const btn = (href: string, label: string, bg: string, fg: string, border: string) => `<a href="${href}" style="display:block;text-align:center;background:${bg};color:${fg};border:2px solid ${border};text-decoration:none;font:800 16px/1 Arial,sans-serif;letter-spacing:.05em;text-transform:uppercase;padding:16px 10px;border-radius:3px">${label}</a>`;
@@ -140,14 +144,14 @@ function reminderEmail({ name, kind, quantity, token }: { name: string | null; k
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#181513;border:2px solid #f0391f;border-radius:6px">
 <tr><td><img src="${SITE}/assets/og-share.jpg" width="560" alt="JK44 Cinema Night Madrid" style="display:block;width:100%;height:auto;border-radius:4px 4px 0 0"></td></tr>
 <tr><td style="padding:28px 28px 6px">
-<p style="margin:0 0 6px;color:#e3ad3c;font:12px/1.4 'Courier New',monospace;letter-spacing:.14em;text-transform:uppercase">Recordatorio · Faltan 7 días</p>
-<h1 style="margin:0 0 12px;color:#f3ead9;font:900 30px/1.1 Arial Black,Arial,sans-serif;text-transform:uppercase">${first ? `${esc(first)}, ¿vienes el jueves?` : "¿Vienes el jueves?"}</h1>
-<p style="margin:0 0 18px;color:#f3ead9;font:16px/1.5 Arial,sans-serif">Tienes ${what} para <b>JK44 Cinema Night Madrid</b>. Confírmanos con un clic si vienes: así preparamos la sala, la pizza y la cerveza para todos.</p>
+<p style="margin:0 0 6px;color:#e3ad3c;font:12px/1.4 'Courier New',monospace;letter-spacing:.14em;text-transform:uppercase">Recordatorio · ${left}</p>
+<h1 style="margin:0 0 12px;color:#f3ead9;font:900 30px/1.1 Arial Black,Arial,sans-serif;text-transform:uppercase">${ask ? (first ? `${esc(first)}, ¿vienes el jueves?` : "¿Vienes el jueves?") : (first ? `¡${esc(first)}, nos vemos el jueves!` : "¡Nos vemos el jueves!")}</h1>
+${ask ? `<p style="margin:0 0 18px;color:#f3ead9;font:16px/1.5 Arial,sans-serif">Tienes ${what} para <b>JK44 Cinema Night Madrid</b>. Confírmanos con un clic si vienes: así preparamos la sala, la pizza y la cerveza para todos.</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 10px"><tr>
 <td width="50%" style="padding-right:6px">${btn(yes, "✓ Voy", "#f0391f", "#f3ead9", "#f0391f")}</td>
 <td width="50%" style="padding-left:6px">${btn(no, "No puedo ir", "transparent", "#a39686", "#4a3f38")}</td>
 </tr></table>
-<p style="margin:0 0 22px;color:#a39686;font:13px/1.5 Arial,sans-serif">Si no puedes venir, dínoslo: tu plaza pasa a otra persona.</p>
+<p style="margin:0 0 22px;color:#a39686;font:13px/1.5 Arial,sans-serif">Si no puedes venir, dínoslo: tu plaza pasa a otra persona.</p>` : `<p style="margin:0 0 22px;color:#f3ead9;font:16px/1.5 Arial,sans-serif">Te recordamos que tienes ${what} para <b>JK44 Cinema Night Madrid</b>. No tienes que hacer nada: en la puerta solo necesitamos tu nombre.</p>`}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid #2e2824;border-bottom:1px solid #2e2824;margin:0 0 18px">
 ${row("Cuándo", "<b>Jueves 3 de diciembre</b> · 19:00")}
 ${row("Dónde", `<b>Sala Equis</b><br>Calle del Duque de Alba, 4 · 28012 Madrid<br>Metro Tirso de Molina (L1) · La Latina (L5)<br><a href="${MAPS}" style="color:#e3ad3c">Abrir en Maps ↗</a>`)}
@@ -162,11 +166,15 @@ ${row("En la puerta", "Solo tu nombre" + (kind === "ticket" ? " (la entrada va a
 </td></tr></table>
 </td></tr>
 <tr><td style="padding:18px 28px 26px;color:#a39686;font:13px/1.5 Arial,sans-serif">
-<p style="margin:0 0 8px"><i>EN · Reminder: JK44 Cinema Night is next Thursday, 3 December at 19:00 at Sala Equis, Calle del Duque de Alba 4, Madrid. Tap "Voy" to confirm you're coming or "No puedo ir" if you can't make it.</i></p>
+<p style="margin:0 0 8px"><i>EN · Reminder: JK44 Cinema Night is next Thursday, 3 December at 19:00 at Sala Equis, Calle del Duque de Alba 4, Madrid. ${ask ? `Tap "Voy" to confirm you're coming or "No puedo ir" if you can't make it.` : "Your tickets are under your name, just give it at the door."}</i></p>
 <p style="margin:0">¿Dudas? Responde a este email. · Producido por <a href="https://jk44films.com" style="color:#f0391f;text-decoration:none"><b>JK44</b></a></p>
 </td></tr></table></td></tr></table></body></html>`;
-  const subject = `${first ? first + ", ¿" : "¿"}vienes el jueves? Confirma tu asistencia · JK44 Cinema Night`;
-  const text = `${first ? first + ", ¿" : "¿"}vienes el jueves?\n\nJK44 Cinema Night Madrid · Jueves 3 de diciembre · 19:00\n${VENUE} · ${ADDRESS}\n\nVoy: ${yes}\nNo puedo ir: ${no}\n\nJuego: ${SITE}/juego/`;
+  const subject = ask
+    ? `${first ? first + ", ¿" : "¿"}vienes el jueves? Confirma tu asistencia · JK44 Cinema Night`
+    : `Recordatorio: JK44 Cinema Night Madrid · jueves 3 dic · 19:00 · ${VENUE}`;
+  const text = ask
+    ? `${first ? first + ", ¿" : "¿"}vienes el jueves?\n\nJK44 Cinema Night Madrid · Jueves 3 de diciembre · 19:00\n${VENUE} · ${ADDRESS}\n\nVoy: ${yes}\nNo puedo ir: ${no}\n\nJuego: ${SITE}/juego/`
+    : `${left}: JK44 Cinema Night Madrid\n\nTienes ${quantity} entrada${quantity === 1 ? "" : "s"}. Jueves 3 de diciembre · 19:00\n${VENUE} · ${ADDRESS}\n${METRO}\n\nEn la puerta solo tu nombre. Tres películas, pizza, cerveza y cookies.\n\nJuego: ${SITE}/juego/`;
   return { subject, html, text };
 }
 
